@@ -13,7 +13,8 @@
             tabularx,
             authblk,
             textcomp,
-            lineno}
+            lineno,
+            setspace}
 
 % side caption figure
 \usepackage{sidecap}
@@ -37,26 +38,34 @@
 % margin
 \usepackage[top=2.54cm, bottom=2.54cm, left=2.54cm, right=2.54cm]{geometry}
 
+\linenumbers 
+\doublespacing
+
 % title
 \title{Body size and local density explain movement patterns in stream fish}
 \date{} % remove date from title
 
 % author list
-\author{} % remove author list from main text
-
-\linenumbers 
+\author{} % remove author list from main text 
 
 \begin{document}
 
 \maketitle
 
+
+\section*{Keywords}
+
+fish movement, body size, density-dependent, movement drivers, extrinsic and intrinsic, freshwater
+
 \section{Abstract}
 
-Movement is a fundamental process in structuring communities and distributing species. Both extrinsic (e.g., density of species) and intrinsic factors (e.g., body size) influence movement patterns, ultimately driving the spatial organization of communities. However, these extrinsic and intrinsic factors are often assessed in isolation, limiting our ability to understand how multiple factors combine to shape movement patterns in nature. Here, we evaluate whether body size and intra- and interspecific densities have an impact on movement of four fish species: bluehead chub, creek chub, green sunfish, and redbreast sunfish in a small stream. We applied a dispersal-observation model accounting for detectability, survival, and emigration to capture-mark-recapture data to estimate movement patterns. We found that larger individuals were more likely to move, which may be explained by their greater physical ability to balance the energetic cost of moving in tandem with heightened competitive ability during settlement. The effect of density on movement was mixed, such that both centrarchid species responded positively to creek chub, but conversely to the bluehead chub. However, cyprinid responses were limited and variable. These results suggest drivers of movement are species-specific, but further integration of behavioral and spatial ecology can provide greater insight into spatial dynamics. 
+ Movement is a fundamental process in structuring communities, distributing species, and mediating gene flow. Both extrinsic (e.g., density of species) and intrinsic factors (e.g., body size) influence movement patterns, ultimately driving the spatial organization of ecological communities. However, these extrinsic and intrinsic factors are often assessed in isolation, limiting our ability to understand how multiple factors combine to shape movement patterns in nature. Here, we evaluate whether body size (intrinsic) and intra- and interspecific densities (extrinsic) have an impact on the movement rates of four fish species (bluehead chub, creek chub, green sunfish, and redbreast sunfish) in a small stream. We employed a capture-mark-recapture framework to individually track movements, classified as the difference between locations on consecutive (re)captures. We then applied a dispersal-observation model that accounts for detectability, survival, and emigration when inferring movement processes. We found that larger individuals were more likely to move, which may be explained by their greater physical ability to balance the energetic cost of moving in tandem with heightened competitive ability during settlement. The effect of density on movement was mixed, such that both centrarchid species responded to creek chub positively, but conversely to the bluehead chub. The only cyprinid responses to densities was that of the creek chub, with its movement inhibited only by high densities of redbreast sunfish; and bluehead chub, with its movement propelled by high densities of bluehead chub. Collectively, our results suggest that intrinsic (body size) and extrinsic factors (density) act to dictate movement patterns, but their relative importance is species-specific. Further exploring the relationship behind drivers of movement by integrating behavioral and spatial ecology will provide greater insight into spatial community dynamics.
+
+\newpage
 
 \section{Introduction}
 
-Local communities are dynamically linked to each other via movement with important consequences for the spatial organization of species distributions. Prevailing spatial paradigms, such as metapopulation and metacommunity frameworks, often treat this ecological process as stochastic \citep{thompsonProcessbasedMetacommunityFramework2020}. However, a parallel line of research suggests that movement is a process of individual decision-making \citep{clobertDispersalEcologyEvolution2012}. Individuals perceive a variation in biotic and abiotic conditions among localities and may respond differently due to different movement capabilities \citep{clobertDispersalEcologyEvolution2012}. Movement does not come without a cost, however. Mobile individuals must make an appropriate decision on when they move to optimize their fitness, such as growth and survival \citep{bonteCostsDispersal2012}. Thus, movement is influenced by both extrinsic and intrinsic factors and acts as a behavioral mechanism to structure communities in space \citep{leiboldMetacommunityConceptFramework2004, mcpeekEvolutionPassiveDispersal2024, schlagelMovementmediatedCommunityAssembly2020}. 
+Local communities are dynamically linked to each other via movement with important consequences for the spatial organization of species distributions. Movement, a fundamental component in many ecological processes, arises from behavioral processes that consider an individual's reason, ability, and capacity to move \citep{clobertDispersalEcologyEvolution2012} ADD- FAUSCH ET AL 2002 and NATHAN ET AL 2008a. Such a decision is highly individualized and dependent on intrinsic factors, such as life-history, personality, body size and other phenotypic traits \citep{fraserExplainingLeptokurticMovement2001} ADD- COTE ET AL 2010. In addition, extrinsic factors, such as habitat complexity, temperature, resource availability, and even population density, can play a role in an individual's movement decision \citep{bonteCostsDispersal2012, bowlerCausesConsequencesAnimal2005, rasmussenIndividualMovementStream2017}. Movement does not come without a cost, however. Mobile individuals must make an appropriate decision on when they move to optimize their fitness, such as growth and survival \citep{bonteCostsDispersal2012}. Thus, movement is influenced by both extrinsic and intrinsic factors and acts as a behavioral mechanism to structure communities in space \citep{leiboldMetacommunityConceptFramework2004, mcpeekEvolutionPassiveDispersal2024, schlagelMovementmediatedCommunityAssembly2020}. 
 
 Population density – either intraspecific or interspecific – exemplifies an extrinsic driver, motivating movement through competitive and mutualistic interactions. For example, competitive interactions may cause individuals to move away from densely populated areas, while mutualistic interactions may facilitate interspecific aggregation \citep{thierryInterplayAbioticBiotic2024, rasmussenIndividualMovementStream2017}. In parallel, the capacity to move may be affected by intrinsic individual conditions, such as body size \citep{clobertDispersalEcologyEvolution2012}. For example,  larger individuals tend to move long distances due in part to their greater locomotive capabilities, although the nature of correlation varies greatly among species and ecological contexts \citep{comteEvidenceDispersalSyndromes2018, teruiParasiteInfectionInduces2017, radingerPatternsPredictorsFish2014, debeffeConditiondependentNatalDispersal2012,gilliamMovementCorridorsEnhancement2001}.
 % Hence, extrinsic and intrinsic drivers are critical for understanding community dynamics.
@@ -175,6 +184,17 @@ Movement is complex and nature cannot always follow a clear pattern as exemplifi
 
 Movement mediates how species interact shaping communities and metacommunities \citep{schlagelMovementmediatedCommunityAssembly2020}. Our study demonstrates how intrinsic (e.g., body size) and extrinsic (e.g., population density) drivers can help pinpoint potential movement patterns in freshwater fishes with variation among species elucidating a potential avenue to explore community dynamics in the future. Extrapolating how non-random movements, such as those identified in this study, affect species coexistence and the spatial patterns of community organization will be essential in connecting behavioral ecology to spatial theory. Although metapopulation and metacommunity, two major frameworks in spatial ecology, typically assume movement or dispersal processes are stochastic, recent theoretical studies have begun to incorporate non-random movement into their simulation frameworks \citep{amarasekareEffectNonrandomDispersal2010, ruokolainenStableCoexistenceEcologically2016}. Yet, empirical validations lag far behind. Integrating field-based movement patterns with theoretical simulations will provide greater insight into the mechanisms behind community and metacommunity dynamics.
 
+%\section*{Acknowledgements}
+
+%This work is based on materials supported by University of North Carolina at Greensboro Startup, the Faculty Internal Award, John O'Brien Ecological Field Award, and Dorothy Levis Munroe Research Award funds. We graciously thank our undergraduate students for their help in conducting seasonal fieldwork and digitizing data. We are grateful to University of North Carolina at Greensboro and North Carolina Agricultural and Technical State University for their corroboration in granting us access to Gateway Research Park. 
+
+%\section*{Conflicts of Interest}
+
+%None declared.
+
+%\section*{Author Contributions}
+
+%A.T. and A.L. conceived the idea; A.L., S.K., and A.T. performed  field work; A.L. and A.T. performed statistical analysis and drafted the manuscript; All authors contributed to revision and gave final approval for  publication.
 
 \bibliography{tex/references}
 
