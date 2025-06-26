@@ -54,7 +54,7 @@ df_combined <- df_move0 %>% # movement dataframe
   ungroup() %>% 
   select(-c(starts_with("n_")))
 
-#saveRDS(df_combined, file = "data_formatted/data_combined.rds")
+saveRDS(df_combined, file = "data_formatted/data_combined.rds")
 
 
 # run jags ----------------------------------------------------------------
@@ -62,7 +62,9 @@ df_combined <- df_move0 %>% # movement dataframe
 usp <- c("green_sunfish",
          "redbreast_sunfish",
          "creek_chub",
-         "bluehead_chub") %>% 
+         "bluehead_chub",
+         #"bluegill", doesn't converge
+         "striped_jumprock")%>% 
   sort()
 
 ## mcmc setup ####

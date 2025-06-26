@@ -33,7 +33,9 @@ intv0 <- df_tag0 %>%
 usp <- c("bluehead_chub",
          "creek_chub",
          "green_sunfish",
-         "redbreast_sunfish") %>%
+         "redbreast_sunfish",
+         #"bluegill", doesn't converge
+         "striped_jumprock") %>%
   sort()
 
 list_est <- foreach(x = usp) %do% {
@@ -157,7 +159,7 @@ list_est <- foreach(x = usp) %do% {
   
   ## mcmc setup ####
   n_ad <- 1000
-  n_iter <- 20000
+  n_iter <- 25000
   n_thin <- max(3, ceiling(n_iter / 1000)) #happens second want chains to converge 
   n_burn <- ceiling(max(10, n_iter / 2)) #happens first and gets rid of noise 
   n_sample <- ceiling(n_iter / n_thin)
@@ -195,6 +197,7 @@ list_est <- foreach(x = usp) %do% {
   return(cout)
 }
 
+
 ## extract median zeta (= seasonal detection probability)
 df_zeta <- lapply(list_est,
                   function(data) {
@@ -219,5 +222,5 @@ list_est[[1]]
 list_est[[2]]
 list_est[[3]]
 list_est[[4]]
-
-
+list_est[[5]]
+list_est[[6]]
