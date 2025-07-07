@@ -173,7 +173,7 @@ df_fig <- df_y %>%
   mutate(sig = ifelse(between(0, lower95, upper95), 
                       "no",
                       "yes")) %>% 
-  ungroup()
+  ungroup() 
 
 (fig_size <- df_combined %>%
     drop_na(section1) %>% # figure only includes recap
@@ -188,6 +188,13 @@ df_fig <- df_y %>%
                   linetype = sig)) +
     scale_linetype_manual(values = c("yes" = "solid",
                                      "no" = "dashed")) +
+    geom_area(data = df_fig %>% 
+                filter(focus == "log_length"),
+              aes(x = x_value,
+                  y = y,
+                  alpha = .5,
+                  fill = species)) +
+    scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
     facet_wrap2(~ species,
                 scales = "free",
                 strip = strip1,
@@ -231,6 +238,14 @@ ggsave(fig_size,
                  linetype = sig))  +
    scale_linetype_manual(values = c("yes" = "solid",
                                     "no" = "dashed")) +
+   geom_area(data = df_fig %>% 
+               filter(str_detect(focus, "adj_density")) %>% 
+               rename(opponent = "focus"),
+             aes(x = x_value,
+                 y = y,
+                 alpha = .5,
+                 fill = species)) +
+   scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
    facet_grid(rows = vars(species),
               cols = vars(opponent),
               scales = "free",
