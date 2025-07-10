@@ -3,6 +3,4 @@
 .RData
 .Ruserdata
 old_practice_code
-code/.DS_Store
-output/.DS_Store
-tex/.DS_Store
+*.DS_Store
