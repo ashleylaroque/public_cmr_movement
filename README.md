@@ -13,17 +13,17 @@ Model source codes are `model_move.R`.
 
 Data are formatted in and sourced from:
 
-- data_formatted/data_move.rds (from `format_cmr.R`; data frame with
+- data_fmt/data_move.rds (from `format_cmr.R`; data frame with
   consecutive fish movement related data)
-- data_formatted/data_water_hobo.rds (from `format_water_level.R`; data
+- data_fmt/data_water_hobo.rds (from `format_water_level.R`; data
   frame with water temperature)
-- data_formatted/data_density.rds (from `format_cmr.R`; generates all
+- data_fmt/data_density.rds (from `format_cmr.R`; generates all
   density of all fish species per section area)
-- data_formatted/data_habitat.rds (from `format_habitat.R`; data frame
+- data_fmt/data_habitat.rds (from `format_habitat.R`; data frame
   with all habitat data)
-- data_formatted/data_detection.rds (from `run_model_scjs.R`; generated
+- data_fmt/data_detection.rds (from `run_model_scjs.R`; generated
   to account for seasonal detectability)
-- data_formatted/data_season.rds (from `run_model_scjs.R`; generated to
+- data_fmt/data_season.rds (from `run_model_scjs.R`; generated to
   include seasonal differences)
 
 For visualization, see:
@@ -39,9 +39,9 @@ source codes are `model_scjs.R`.
 
 Data are formatted in and sourced from:
 
-- data_formatted/data_cmr.rds (from `format_cmr.R`; base data frame with
+- data_fmt/data_cmr.rds (from `format_cmr.R`; base data frame with
   all fish related data (tagged and non-tagged fish))
-- data_formatted/data_move.rds (from `format_cmr.R`; data frame with
+- data_fmt/data_move.rds (from `format_cmr.R`; data frame with
   consecutive fish movement related data)
 
 ## Formatting Habitat Data (`format_habitat.R`)
