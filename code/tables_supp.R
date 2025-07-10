@@ -7,8 +7,8 @@ rm(list = ls())
 source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
-df_est <- readRDS("data_formatted/data_est.rds")
-df_combined <- readRDS("data_formatted/data_combined.rds") %>% 
+df_est <- readRDS("data_fmt/data_est.rds")
+df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
          month = format(datetime0, "%m") %>% 
@@ -158,7 +158,7 @@ print(xtable(tab_hab,
 
 options(xtable.comment = FALSE)
 
-df_p <- readRDS("data_formatted/output_cjs.rds") %>% 
+df_p <- readRDS("data_fmt/output_cjs.rds") %>% 
   bind_rows() %>% 
   filter(str_detect(para, "zeta")) %>% 
   mutate(species = str_to_sentence(species) %>% 

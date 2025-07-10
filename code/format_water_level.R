@@ -115,7 +115,7 @@ df_occ <- df_daily %>%
   drop_na(occasion)
 
 # Export file
-saveRDS(df_occ, file = "data_formatted/data_water_hobo.rds")
+saveRDS(df_occ, file = "data_fmt/data_water_hobo.rds")
 
 
 # figure ------------------------------------------------------------------
