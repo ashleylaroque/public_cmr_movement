@@ -8,7 +8,7 @@ source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
 
-df_combined <- readRDS("data_formatted/data_combined.rds") %>% 
+df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
          month = format(datetime0, "%m") %>% 
@@ -22,7 +22,7 @@ df_combined <- readRDS("data_formatted/data_combined.rds") %>%
                         "green_sunfish",
                         "redbreast_sunfish"))# comes from 'run_model_move'
 
-df_output <- readRDS("data_formatted/output_move.rds") %>% 
+df_output <- readRDS("data_fmt/output_move.rds") %>% 
   bind_rows() %>% 
   rename(species = "y",
          median = "50%" ,
@@ -96,7 +96,7 @@ dat_fig <- df_output %>%
                       "no",
                       "yes")) 
 
-#saveRDS(dat_fig, file = "data_formatted/data_est.rds")
+#saveRDS(dat_fig, file = "data_fmt/data_est.rds")
 
 
 # estimates faceted by species 

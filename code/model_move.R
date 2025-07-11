@@ -1,6 +1,6 @@
 model {
   ## prior for the intercept
-  b[1] ~ dnorm(0, pow(10, -2))
+  b[1] ~ dnorm(0, pow(2.5, -2))
   
   ## prior for coefficients
   for (k in 2:K) {
@@ -16,7 +16,8 @@ model {
     Y[i] ~ dbern(phi[i] * p)
     
     ## movement model
-    X1[i] ~ dnorm(X0[i], tau[i])
+    D[i] <- abs(X1[i] - X0[i]) / Intv[i]
+    X1[i] ~ dt(X0[i], tau[i], 3)
     tau[i] <- pow(sd_m[i], -2)
     
     log(sd_m[i]) <- inprod(b[], X[i,]) + log(Intv[i])

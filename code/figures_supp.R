@@ -7,7 +7,7 @@ rm(list = ls())
 source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
-df_combined <- readRDS("data_formatted/data_combined.rds") %>% 
+df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
          month = format(datetime0, "%m") %>% 

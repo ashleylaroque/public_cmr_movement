@@ -8,10 +8,10 @@ source("code/library.R")
 rm(list = ls())
 
 ## base data frame with all data
-df_tag0 <- readRDS("data_formatted/data_cmr.rds")
+df_tag0 <- readRDS("data_fmt/data_cmr.rds")
 
 ## consecutive movement data frame
-df_con <- readRDS("data_formatted/data_move.rds")
+df_con <- readRDS("data_fmt/data_move.rds")
 
 ## baseline interval information
 ## = from the 1st day at a given occasion to the 1st day of the next
@@ -214,9 +214,9 @@ df_zeta <- lapply(list_est,
 
 
 ## export
-saveRDS(list_est, file = "data_formatted/output_cjs.rds")
-saveRDS(df_zeta, file = "data_formatted/data_detection.rds")
-saveRDS(df_season, file = "data_formatted/data_season.rds")
+saveRDS(list_est, file = "data_fmt/output_cjs.rds")
+saveRDS(df_zeta, file = "data_fmt/data_detection.rds")
+saveRDS(df_season, file = "data_fmt/data_season.rds")
 
 list_est[[1]]
 list_est[[2]]

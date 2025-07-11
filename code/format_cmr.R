@@ -104,10 +104,10 @@ df_move <- lapply(seq_len(length(list_move)),
 
 ## export
 saveRDS(df_cmr,
-        file = "data_formatted/data_cmr.rds")
+        file = "data_fmt/data_cmr.rds")
 
 saveRDS(df_move,
-        file = "data_formatted/data_move.rds")
+        file = "data_fmt/data_move.rds")
 
 
 # format for predictors ---------------------------------------------------
@@ -176,14 +176,14 @@ df_n <- with(df_cmr,
   dplyr::select(-n.x, -n.y)
 
 ## append environmental variables
-df_h <- readRDS("data_formatted/data_habitat.rds")
+df_h <- readRDS("data_fmt/data_habitat.rds")
 
 df_den <- df_n %>% 
   left_join(df_h %>% select(occasion, section, area)) %>% 
   mutate(density = n / area) 
 
 ## export
-saveRDS(df_den, file = "data_formatted/data_density.rds")
+saveRDS(df_den, file = "data_fmt/data_density.rds")
 
 
 

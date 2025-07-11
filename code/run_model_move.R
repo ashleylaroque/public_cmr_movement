@@ -1,8 +1,5 @@
-
 #' Description:
 #' This script runs modified dispersal-observation model for predicting movement with density and body size
-
-# setup -------------------------------------------------------------------
 
 rm(list = ls())
 source("code/library.R")
@@ -11,18 +8,22 @@ source("code/function.R")
 # data --------------------------------------------------------------------
 
 ## format data
-df_move0 <- readRDS("data_formatted/data_move.rds") %>% 
+df_move0 <- readRDS("data_fmt/data_move.rds") %>% 
   drop_na(section0)
 
-df_zeta <- readRDS("data_formatted/data_detection.rds") # comes from 'run_model_scjs'
-df_season <- readRDS("data_formatted/data_season.rds") # comes from 'run_model_scjs'
-df_hobo <- readRDS("data_formatted/data_water_hobo.rds")   # comes from 'format_water_level'
+# comes from 'run_model_scjs'; detectability estimate
+df_zeta <- readRDS("data_fmt/data_detection.rds")
 
+# comes from 'run_model_scjs'; season data frame
+df_season <- readRDS("data_fmt/data_season.rds") 
 
-df_den <- readRDS("data_formatted/data_density.rds") %>% 
+# comes from 'format_water_level'; water temperature data
+df_hobo <- readRDS("data_fmt/data_water_hobo.rds")
+
+df_den <- readRDS("data_fmt/data_density.rds") %>% 
   left_join(df_season, by = "occasion") %>% 
-  mutate(season= case_when(season == 0 ~ "winter",
-                           season == 1 ~ "summer")) %>% 
+  mutate(season = case_when(season == 0 ~ "winter",
+                            season == 1 ~ "summer")) %>% 
   left_join(df_zeta,
             by = c("species", "season")) %>% 
   mutate(adj_density = (density / estimate))
@@ -32,7 +33,7 @@ df_den_adj <- df_den %>%
               names_from = species,
               values_from = c(n, adj_density))
 
-df_h <- readRDS("data_formatted/data_habitat.rds") %>% 
+df_h <- readRDS("data_fmt/data_habitat.rds") %>% 
   dplyr::select(-area)
 
 ## combine movement, density, and habitat
@@ -54,7 +55,7 @@ df_combined <- df_move0 %>% # movement dataframe
   ungroup() %>% 
   select(-c(starts_with("n_")))
 
-#saveRDS(df_combined, file = "data_formatted/data_combined.rds")
+# saveRDS(df_combined, file = "data_fmt/data_combined.rds")
 
 
 # run jags ----------------------------------------------------------------
@@ -62,13 +63,11 @@ df_combined <- df_move0 %>% # movement dataframe
 usp <- c("green_sunfish",
          "redbreast_sunfish",
          "creek_chub",
-         "bluehead_chub",
-         #"bluegill", doesn't converge
-         "striped_jumprock")%>% 
+         "bluehead_chub") %>%
   sort()
 
 ## mcmc setup ####
-n_ad <- 1500
+n_ad <- 1000
 n_iter <- 30000
 n_thin <- max(3, ceiling(n_iter / 1000))
 n_burn <- ceiling(max(10, n_iter / 2))
@@ -77,33 +76,59 @@ n_chain <- 3
 
 list_est <- foreach(x = usp) %do% {
   
-  df_i <- filter(df_combined, species == x)
+  df_i0 <- filter(df_combined, species == x) %>%
+    mutate(log_length = log(length0),
+           area_ucb = sqrt(area_ucb))
+  
+  ## confine the range of predictors to those "recaptured"
+  ## - to stabilize statistical estimates (avoid over-extrapolation)
+  
+  ## - get max values for those recaptured
+  v_max <- df_i0 %>%
+    filter(y == 1) %>%
+    select(log_length, # log-trans total length of individual
+           area_ucb,
+           velocity_mean,
+           mean_temp,
+           adj_density_bluehead_chub, # seasonally adjusted density
+           adj_density_creek_chub,
+           adj_density_green_sunfish,
+           adj_density_redbreast_sunfish) %>%
+    sapply(max)
+  
+  ## - subset original data
+  df_i <- df_i0 %>%
+    filter(log_length <= v_max["log_length"],
+           area_ucb <= v_max["area_ucb"],
+           velocity_mean <= v_max["velocity_mean"],
+           mean_temp <= v_max["mean_temp"],
+           adj_density_bluehead_chub <= v_max["adj_density_bluehead_chub"],
+           adj_density_creek_chub <= v_max["adj_density_creek_chub"],
+           adj_density_green_sunfish <= v_max["adj_density_green_sunfish"],
+           adj_density_redbreast_sunfish <= v_max["adj_density_redbreast_sunfish"])
   
   ## data for jags
   list_jags <- with(df_i,
                     list(Y = y,
                          X1 = section1 * 10 - 5,
-                         X0 = section0 * 10 - 5, 
+                         X0 = section0 * 10 - 5,
                          Nsample = nrow(df_i),
-                         Intv = intv))
+                         Intv = intv)
+  )
   
   ## select predictors
-  X <- df_i %>% 
-    mutate(log_length = log(length0)) %>% 
+  X <- df_i %>%
     dplyr::select(log_length, # log-trans total length of individual
-                  area_ucb,   # area of undercut bank coverage
-                  mean_temp,  # temp
+                  area_ucb,
                   velocity_mean,
+                  mean_temp,
                   adj_density_bluehead_chub, # seasonally adjusted density
-                  adj_density_creek_chub, 
+                  adj_density_creek_chub,
                   adj_density_green_sunfish,
-                  adj_density_redbreast_sunfish) %>% 
-    mutate(across(.cols = c(log_length,
-                            area_ucb,
-                            mean_temp, 
-                            velocity_mean,
-                            starts_with("adj_density")),
-                  .fns = function(x) c(scale(x)))) %>% 
+                  adj_density_redbreast_sunfish
+    ) %>%
+    mutate(across(.cols = everything(),
+                  .fns = function(x) c(scale(x)))) %>%
     model.matrix(~., data = .)
   
   list_jags$X <- X
@@ -133,20 +158,23 @@ list_est <- foreach(x = usp) %do% {
                             adapt = n_ad,
                             burnin = n_burn,
                             sample = n_sample,
-                            thin = n_thin, 
+                            thin = n_thin,
                             n.chains = n_chain,
                             inits = inits,
                             method = "parallel",
                             module = "glm")
-  # check into priors after if it still doesn't converge 
   
-  MCMCvis::MCMCsummary(post$mcmc) %>% 
-    as_tibble(rownames = "para") %>% 
+  df_mcmc <- MCMCvis::MCMCsummary(post$mcmc) %>%
+    as_tibble(rownames = "para")
+  
+  df_parm <- df_mcmc %>% 
+    filter(str_detect(para, "b\\[.*\\]|^p$")) %>% 
     mutate(y = x,
            var = c(colnames(X), NA)) %>%
     relocate(var)
+  
+  return(df_parm)
 }
-
 
 # check convergence -------------------------------------------------------
 
@@ -162,7 +190,7 @@ print(max(v_rhat))
 
 ## results will not be exported unless converged
 if (max(v_rhat) < 1.1) {
-  saveRDS(list_est, file = "data_formatted/output_move.rds")
+  saveRDS(list_est, file = "data_fmt/output_move.rds")
 }
 
 print(list_est)

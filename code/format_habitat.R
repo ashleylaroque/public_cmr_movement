@@ -114,4 +114,4 @@ df_h_sec <- df_sec %>% #has depth, substrate, velocity info
 
 
 ## export
-saveRDS(df_h_sec, "data_formatted/data_habitat.rds")
+saveRDS(df_h_sec, "data_fmt/data_habitat.rds")
