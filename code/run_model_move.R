@@ -11,34 +11,20 @@ source("code/function.R")
 df_move0 <- readRDS("data_fmt/data_move.rds") %>% 
   drop_na(section0)
 
-# comes from 'run_model_scjs'; detectability estimate
-df_zeta <- readRDS("data_fmt/data_detection.rds")
-
-# comes from 'run_model_scjs'; season data frame
-df_season <- readRDS("data_fmt/data_season.rds") 
-
-# comes from 'format_water_level'; water temperature data
-df_hobo <- readRDS("data_fmt/data_water_hobo.rds")
-
-df_den <- readRDS("data_fmt/data_density.rds") %>% 
-  left_join(df_season, by = "occasion") %>% 
-  mutate(season = case_when(season == 0 ~ "winter",
-                            season == 1 ~ "summer")) %>% 
-  left_join(df_zeta,
-            by = c("species", "season")) %>% 
-  mutate(adj_density = (density / estimate))
-
-df_den_adj <- df_den %>% 
+df_den_w <- readRDS("data_fmt/data_density.rds") %>% 
   pivot_wider(id_cols = c(occasion, section, area),
               names_from = species,
-              values_from = c(n, adj_density))
+              values_from = c(n, w_density))
 
 df_h <- readRDS("data_fmt/data_habitat.rds") %>% 
   dplyr::select(-area)
 
+# comes from 'format_water_level'; water temperature data
+df_hobo <- readRDS("data_fmt/data_water_hobo.rds")
+
 ## combine movement, density, and habitat
-df_combined <- df_move0 %>% # movement dataframe
-  left_join(df_den_adj, # add density values
+df_move <- df_move0 %>% # movement dataframe
+  left_join(df_den_w, # add density values
             by = c("occasion0" = "occasion",
                    "section0" = "section")) %>% 
   left_join(df_h, # add habitat variables 
@@ -55,7 +41,7 @@ df_combined <- df_move0 %>% # movement dataframe
   ungroup() %>% 
   select(-c(starts_with("n_")))
 
-# saveRDS(df_combined, file = "data_fmt/data_combined.rds")
+# saveRDS(df_move, file = "data_fmt/data_combined.rds")
 
 
 # run jags ----------------------------------------------------------------
@@ -74,107 +60,123 @@ n_burn <- ceiling(max(10, n_iter / 2))
 n_sample <- ceiling(n_iter / n_thin)
 n_chain <- 3
 
-list_est <- foreach(x = usp) %do% {
-  
-  df_i0 <- filter(df_combined, species == x) %>%
-    mutate(log_length = log(length0),
-           area_ucb = sqrt(area_ucb))
-  
-  ## confine the range of predictors to those "recaptured"
-  ## - to stabilize statistical estimates (avoid over-extrapolation)
-  
-  ## - get max values for those recaptured
-  v_max <- df_i0 %>%
-    filter(y == 1) %>%
-    select(log_length, # log-trans total length of individual
-           area_ucb,
-           velocity_mean,
-           mean_temp,
-           adj_density_bluehead_chub, # seasonally adjusted density
-           adj_density_creek_chub,
-           adj_density_green_sunfish,
-           adj_density_redbreast_sunfish) %>%
-    sapply(max)
-  
-  ## - subset original data
-  df_i <- df_i0 %>%
-    filter(log_length <= v_max["log_length"],
-           area_ucb <= v_max["area_ucb"],
-           velocity_mean <= v_max["velocity_mean"],
-           mean_temp <= v_max["mean_temp"],
-           adj_density_bluehead_chub <= v_max["adj_density_bluehead_chub"],
-           adj_density_creek_chub <= v_max["adj_density_creek_chub"],
-           adj_density_green_sunfish <= v_max["adj_density_green_sunfish"],
-           adj_density_redbreast_sunfish <= v_max["adj_density_redbreast_sunfish"])
-  
-  ## data for jags
-  list_jags <- with(df_i,
-                    list(Y = y,
-                         X1 = section1 * 10 - 5,
-                         X0 = section0 * 10 - 5,
-                         Nsample = nrow(df_i),
-                         Intv = intv)
-  )
-  
-  ## select predictors
-  X <- df_i %>%
-    dplyr::select(log_length, # log-trans total length of individual
-                  area_ucb,
-                  velocity_mean,
-                  mean_temp,
-                  adj_density_bluehead_chub, # seasonally adjusted density
-                  adj_density_creek_chub,
-                  adj_density_green_sunfish,
-                  adj_density_redbreast_sunfish
-    ) %>%
-    mutate(across(.cols = everything(),
-                  .fns = function(x) c(scale(x)))) %>%
-    model.matrix(~., data = .)
-  
-  list_jags$X <- X
-  list_jags$K <- ncol(X)
-  
-  ## run.jags arguments
-  ## - initial values
-  n_chain <- 3
-  
-  inits <- replicate(n_chain,
-                     list(.RNG.name = "base::Mersenne-Twister",
-                          .RNG.seed = NA),
-                     simplify = FALSE)
-  
-  for (j in 1:n_chain) inits[[j]]$.RNG.seed <- 100 * j
-  
-  ## - parameters to be monitored
-  para <- c("b", "p")
-  
-  ## model files
-  m <- runjags::read.jagsfile("code/model_move.R")
-  
-  ## run model
-  post <- runjags::run.jags(model = m$model,
-                            data = list_jags,
-                            monitor = para,
-                            adapt = n_ad,
-                            burnin = n_burn,
-                            sample = n_sample,
-                            thin = n_thin,
-                            n.chains = n_chain,
-                            inits = inits,
-                            method = "parallel",
-                            module = "glm")
-  
-  df_mcmc <- MCMCvis::MCMCsummary(post$mcmc) %>%
-    as_tibble(rownames = "para")
-  
-  df_parm <- df_mcmc %>% 
-    filter(str_detect(para, "b\\[.*\\]|^p$")) %>% 
-    mutate(y = x,
-           var = c(colnames(X), NA)) %>%
-    relocate(var)
-  
-  return(df_parm)
-}
+list_mcmc <- foreach(x = usp) %do% {
+                       
+                       df_i0 <- filter(df_move, species == x) %>%
+                         mutate(log_length = log(length0),
+                                area_ucb = sqrt(area_ucb))
+                       
+                       ## confine the range of predictors to those "recaptured"
+                       ## - to stabilize statistical estimates (avoid over-extrapolation)
+                       
+                       ## - get max values for those recaptured
+                       v_max <- df_i0 %>%
+                         filter(y == 1) %>%
+                         select(log_length, # log-trans total length of individual
+                                area_ucb,
+                                velocity_mean,
+                                mean_temp,
+                                w_density_bluehead_chub, # seasonally adjusted density
+                                w_density_creek_chub,
+                                w_density_green_sunfish,
+                                w_density_redbreast_sunfish) %>%
+                         sapply(max)
+                       
+                       ## - subset original data
+                       df_i <- df_i0 %>%
+                         filter(log_length <= v_max["log_length"],
+                                area_ucb <= v_max["area_ucb"],
+                                velocity_mean <= v_max["velocity_mean"],
+                                mean_temp <= v_max["mean_temp"],
+                                w_density_bluehead_chub <= v_max["w_density_bluehead_chub"],
+                                w_density_creek_chub <= v_max["w_density_creek_chub"],
+                                w_density_green_sunfish <= v_max["w_density_green_sunfish"],
+                                w_density_redbreast_sunfish <= v_max["w_density_redbreast_sunfish"])
+                       
+                       ## data for jags
+                       list_jags <- with(df_i,
+                                         list(Y = y,
+                                              X1 = section1 * 10 - 5,
+                                              X0 = section0 * 10 - 5,
+                                              Nsample = nrow(df_i),
+                                              Intv = intv)
+                       )
+                       
+                       ## select predictors
+                       X <- df_i %>%
+                         dplyr::select(log_length, # log-trans total length of individual
+                                       area_ucb,
+                                       velocity_mean,
+                                       mean_temp,
+                                       w_density_bluehead_chub, # seasonally adjusted density
+                                       w_density_creek_chub,
+                                       w_density_green_sunfish,
+                                       w_density_redbreast_sunfish
+                         ) %>%
+                         mutate(across(.cols = everything(),
+                                       .fns = function(x) c(scale(x)))) %>%
+                         model.matrix(~., data = .)
+                       
+                       list_jags$X <- X
+                       list_jags$K <- ncol(X)
+                       
+                       ## run.jags arguments
+                       ## - initial values
+                       n_chain <- 3
+                       
+                       inits <- replicate(n_chain,
+                                          list(.RNG.name = "base::Mersenne-Twister",
+                                               .RNG.seed = NA,
+                                               p = 0.1,
+                                               b = rep(0, ncol(X)),
+                                               nu = 50),
+                                          simplify = FALSE)
+                       
+                       for (j in 1:n_chain) inits[[j]]$.RNG.seed <- 100 * j
+                       
+                       ## - parameters to be monitored
+                       para <- c("b", "p", "nu")
+                       
+                       ## model files
+                       m <- runjags::read.jagsfile("code/model_move.R")
+                       
+                       ## run model
+                       post <- runjags::run.jags(model = m$model,
+                                                 data = list_jags,
+                                                 monitor = para,
+                                                 adapt = n_ad,
+                                                 burnin = n_burn,
+                                                 sample = n_sample,
+                                                 thin = n_thin,
+                                                 n.chains = n_chain,
+                                                 inits = inits,
+                                                 method = "parallel",
+                                                 module = "glm")
+                       
+                       return(post$mcmc)
+                     }
+
+names(list_mcmc) <- usp
+
+## get summary estimates
+list_est <- lapply(seq_len(length(list_mcmc)),
+                   function(i) {
+                     
+                     mcmc <- list_mcmc[[i]]
+                     MCMCvis::MCMCsummary(mcmc) %>% 
+                       as_tibble(rownames = "parm") %>% 
+                       mutate(p_neg = MCMCvis::MCMCpstr(mcmc,
+                                                        func = function(x) mean(x < 0)) %>%
+                                unlist(),
+                              p_pos = 1 - p_neg) %>% 
+                       filter(str_detect(parm, "b\\[.*\\]|^p|^nu$")) %>% 
+                       mutate(y = names(list_mcmc)[i],
+                              var = c(colnames(X),
+                                      rep(NA, 2))
+                       ) %>%
+                       relocate(var)
+                     
+                   })
 
 # check convergence -------------------------------------------------------
 
@@ -190,6 +192,7 @@ print(max(v_rhat))
 
 ## results will not be exported unless converged
 if (max(v_rhat) < 1.1) {
+  saveRDS(list_mcmc, file = "data_fmt/output_move_mcmc.rds")
   saveRDS(list_est, file = "data_fmt/output_move.rds")
 }
 

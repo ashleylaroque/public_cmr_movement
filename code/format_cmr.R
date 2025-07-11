@@ -207,6 +207,8 @@ df_den_w0 <- df_den_adj %>%
   transmute(occasion,
             section,
             species,
+            area,
+            n,
             density,
             adj_density,
             id = paste(occasion, species, sep = "-"),
