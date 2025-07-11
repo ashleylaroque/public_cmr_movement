@@ -28,7 +28,11 @@ df_output <- readRDS("data_fmt/output_move.rds") %>%
          median = "50%" ,
          upper95 = "97.5%" ,
          lower95 = "2.5%") %>% 
-  drop_na(var) # comes from 'run_model_move'
+  drop_na(var) %>% 
+  filter(species %in% c("bluehead_chub",
+                        "creek_chub",
+                        "green_sunfish",
+                        "redbreast_sunfish")) # comes from 'run_model_move'
 
 # Plot Theme --------------------------------------------------------------
 
@@ -157,7 +161,8 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                               species = rep(unique(species))) %>% 
                       mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
                              y = (exp(log_sigma) * sqrt(2)) / sqrt(pi),
-                             focus = v)
+                             focus = v,
+                             move = exp(log_sigma))
                     
                     ## safer to specify what is a return object
                     return(cout)
@@ -180,28 +185,41 @@ df_fig <- df_y %>%
     ggplot(aes(x = log_length,
                y = abs_move / intv,
                color = species)) +
-    geom_point(alpha = 0.5) +
-    geom_line(data = df_fig %>% 
+    geom_point(alpha = 0.5) + ## add points
+    geom_line(data = df_fig %>% ## draw line
                 filter(focus == "log_length"),
               aes(x = x_value,
-                  y = y,
+                  y = qnorm(.95 , mean = 0, sd = move),
                   linetype = sig)) +
     scale_linetype_manual(values = c("yes" = "solid",
-                                     "no" = "dashed")) +
-    geom_area(data = df_fig %>% 
+                                     "no" = "blank")) +
+    scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"),
+                       name="Species") +
+    geom_area(data = df_fig %>% ## draw shaded area
                 filter(focus == "log_length"),
               aes(x = x_value,
-                  y = y,
-                  alpha = .5,
-                  fill = species)) +
+                  y = qnorm(.95 , mean = 0, sd = move),
+                  alpha = sig,
+                  fill = species,
+                  linetype = sig)) +
+    scale_alpha_manual(values = c("yes" = .5,
+                                  "no" = 0)) +
+    # geom_area(data = df_fig %>% ## draw shaded area
+    #             filter(focus == "log_length"),
+    #           aes(x = x_value,
+    #               y = qnorm(.75, mean = 0, sd = move),
+    #               alpha = sig,
+    #               fill = species,
+    #               linetype = sig)) +
+    # scale_alpha_manual(values = c("yes" = .7,
+    #                               "no" = 0)) +
     scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
     facet_wrap2(~ species,
                 scales = "free",
                 strip = strip1,
                 labeller = labeller(species = species.labs)) +
-    scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"),
-                       name="Species") +
-    labs(x= "ln Length at Capture (ln mm)", y= "Absolute Movement (m/day)") +
+    labs(x= "ln Length at Capture (ln mm)",
+         y= "Standard Deviation of Movement (m/day)") +
     theme_set(plt_theme) +
     theme(legend.position = "none",
           strip.text = element_text(color = 'white'))) 
@@ -228,24 +246,38 @@ ggsave(fig_size,
    ggplot(aes(x = density,
               y = abs_move / intv, 
               color = species)) +
-   geom_point(alpha = 0.5) + 
-   geom_line(data = df_fig %>% 
+   geom_point(alpha = 0.5) + ## add points
+   geom_line(data = df_fig %>% ## draw line
                filter(str_detect(focus, "adj_density")) %>% 
                rename(opponent = "focus"),
              aes(x = x_value,
-                 y = y,
+                 y = qnorm(.95, mean = 0, sd = move),
                  color = species,
                  linetype = sig))  +
    scale_linetype_manual(values = c("yes" = "solid",
-                                    "no" = "dashed")) +
-   geom_area(data = df_fig %>% 
+                                    "no" = "blank")) +
+   geom_area(data = df_fig %>% ## draw shaded area
                filter(str_detect(focus, "adj_density")) %>% 
                rename(opponent = "focus"),
              aes(x = x_value,
-                 y = y,
-                 alpha = .5,
-                 fill = species)) +
+                 y = qnorm(.95, mean = 0, sd = move),
+                 alpha = sig,
+                 fill = species,
+                 linetype = sig)) +
    scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
+   scale_alpha_manual(values = c("yes" = .5,
+                                 "no" = 0)) +
+   # geom_area(data = df_fig %>% ## draw shaded area
+   #             filter(str_detect(focus, "adj_density")) %>% 
+   #             rename(opponent = "focus"),
+   #           aes(x = x_value,
+   #               y = qnorm(.75, mean = 0, sd = move),
+   #               alpha = sig,
+   #               fill = species,
+   #               linetype = sig)) +
+   # scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
+   # scale_alpha_manual(values = c("yes" = .7,
+   #                               "no" = 0)) +
    facet_grid(rows = vars(species),
               cols = vars(opponent),
               scales = "free",
@@ -254,7 +286,7 @@ ggsave(fig_size,
    scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"), 
                       name = "species") +
    labs(x= expression("Density (n /"~m^2*")"),
-        y= "Absolute Movement (m / day)") +
+        y= "Standard Deviation of Movement (m / day)") +
    theme_set(plt_theme) +
    theme(legend.position = "none",
          strip.background = element_rect(color = "black"),
