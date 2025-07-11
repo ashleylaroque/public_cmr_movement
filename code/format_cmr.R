@@ -182,10 +182,86 @@ df_den <- df_n %>%
   left_join(df_h %>% select(occasion, section, area)) %>% 
   mutate(density = n / area) 
 
+## detectability correction
+# comes from 'run_model_scjs'; detectability estimate
+df_zeta <- readRDS("data_fmt/data_detection.rds")
+
+# comes from 'run_model_scjs'; season data frame
+df_season <- readRDS("data_fmt/data_season.rds") 
+
+df_den_adj <- df_den %>% 
+  left_join(df_season, by = "occasion") %>% 
+  mutate(season = case_when(season == 0 ~ "winter",
+                            season == 1 ~ "summer")) %>% 
+  left_join(df_zeta,
+            by = c("species", "season")) %>% 
+  rename(p_detect = estimate) %>% 
+  mutate(adj_density = (density / p_detect)) %>% 
+  select(-para)
+
+# density distance matrix -------------------------------------------------
+
+theta <- 0.1
+
+df_den_w0 <- df_den_adj %>% 
+  transmute(occasion,
+            section,
+            species,
+            density,
+            adj_density,
+            id = paste(occasion, species, sep = "-"),
+            theta = theta) %>% 
+  filter(species %in% c("bluehead_chub",
+                        "creek_chub",
+                        "green_sunfish",
+                        "redbreast_sunfish"))
+
+index <- pull(df_den_w0, id) %>% 
+  unique()
+
+pb <- txtProgressBar(min = 0, 
+                     max = length(index), 
+                     style = 3) 
+
+## obtain weighted density by distance
+df_den_w <- foreach(i = seq_len(length(index)),
+                    .combine = bind_rows) %do% {
+                      
+                      ## progress bar
+                      setTxtProgressBar(pb, i)
+                      
+                      ## occasion-species specific data
+                      ## 43 data points
+                      df_i <- df_den_w0 %>% 
+                        filter(id == index[i]) %>% 
+                        arrange(section)
+                      
+                      ## distance matrix
+                      X <- df_i %>% 
+                        mutate(x = section * 10 - 5) %>% 
+                        pull(x) %>% 
+                        dist() %>% 
+                        data.matrix()
+                      
+                      ## weighted density
+                      ## - weight matrix
+                      W <- exp(-theta * X)
+                      
+                      ## - adjusted density vector
+                      v_adj_den <- df_i %>% 
+                        pull(adj_density)
+                      
+                      ## - weighted density
+                      w_den <- drop(W %*% v_adj_den)
+                      
+                      ## return
+                      df_i %>% 
+                        mutate(w_density = w_den) %>% 
+                        select(-id) %>% 
+                        return()
+                    }
+
+close(pb)
+
 ## export
-saveRDS(df_den, file = "data_fmt/data_density.rds")
-
-
-
-
-
+saveRDS(df_den_w, file = "data_fmt/data_density.rds")
