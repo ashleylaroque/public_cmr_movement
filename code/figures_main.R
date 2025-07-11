@@ -192,7 +192,7 @@ df_fig <- df_y %>%
                   y = qnorm(.95 , mean = 0, sd = move),
                   linetype = sig)) +
     scale_linetype_manual(values = c("yes" = "solid",
-                                     "no" = "dashed")) +
+                                     "no" = "blank")) +
     scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"),
                        name="Species") +
     geom_area(data = df_fig %>% ## draw shaded area
@@ -255,7 +255,7 @@ ggsave(fig_size,
                  color = species,
                  linetype = sig))  +
    scale_linetype_manual(values = c("yes" = "solid",
-                                    "no" = "dashed")) +
+                                    "no" = "blank")) +
    geom_area(data = df_fig %>% ## draw shaded area
                filter(str_detect(focus, "adj_density")) %>% 
                rename(opponent = "focus"),
