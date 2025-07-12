@@ -41,7 +41,7 @@ df_move <- df_move0 %>% # movement dataframe
   ungroup() %>% 
   select(-c(starts_with("n_")))
 
-# saveRDS(df_move, file = "data_fmt/data_combined.rds")
+saveRDS(df_move, file = "data_fmt/data_combined.rds")
 
 
 # run jags ----------------------------------------------------------------
