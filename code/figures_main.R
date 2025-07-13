@@ -1,13 +1,14 @@
 
 rm(list = ls())
+source(here::here("code/library.R"))
 
 # Load Data ---------------------------------------------------------------
 
-source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
 
-df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
+## raw movement data to which movement model was fitted
+df_move <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
          month = format(datetime0, "%m") %>% 
@@ -21,13 +22,34 @@ df_combined <- readRDS("data_fmt/data_combined.rds") %>%
                         "green_sunfish",
                         "redbreast_sunfish"))# comes from 'run_model_move'
 
+## mcmc samples
+list_mcmc <- readRDS("data_fmt/output_move_mcmc.rds") %>% 
+  lapply(FUN = MCMCvis::MCMCchains) 
+
+df_mcmc <- lapply(X = seq_len(length(list_mcmc)),
+                  FUN = function(i) {
+                    
+                    as_tibble(list_mcmc[[i]]) %>%
+                      pivot_longer(cols = everything(),
+                                   names_to = "parm",
+                                   values_to = "value") %>%
+                      arrange(parm) %>%
+                      mutate(species = names(list_mcmc)[i])
+                    
+                  }) %>% 
+  bind_rows()
+
+## mcmc summary
 df_output <- readRDS("data_fmt/output_move.rds") %>% 
   bind_rows() %>% 
   rename(species = "y",
          median = "50%" ,
          upper95 = "97.5%" ,
          lower95 = "2.5%") %>% 
-  drop_na(var) %>% 
+  rowwise() %>% 
+  mutate(prob = max(p_pos, p_neg)) %>% 
+  ungroup() %>% 
+  drop_na(parm) %>% 
   filter(species %in% c("bluehead_chub",
                         "creek_chub",
                         "green_sunfish",
@@ -63,85 +85,148 @@ plt_theme <- theme_bw() + theme(
   strip.text.y = element_text(size = 16),
   axis.title = element_text(size = 16),
   axis.text.x = element_text(size = 13),
-  axis.text.y = element_text(size = 13))
+  axis.text.y = element_text(size = 13),
+  
+  plot.margin = unit(c(1, 1, 1.5, 1.5), "cm")
+)
 
 theme_set(plt_theme)
 
 pd <- position_dodge(0.3)
 
-species.labs <- c("Bluehead Chub", "Creek Chub", "Green Sunfish", "Redbreast Sunfish")
-names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbreast_sunfish")
+species.labs <- c("Bluehead chub",
+                  "Creek chub",
+                  "Green sunfish",
+                  "Redbreast sunfish")
+names(species.labs) <- c("bluehead_chub", 
+                         "creek_chub",
+                         "green_sunfish",
+                         "redbreast_sunfish")
 
-opp.labs <- c("Density Bluehead Chub", "Density Creek Chub", "Density Green Sunfish", "Density Redbreast Sunfish")
-names(opp.labs) <- c("adj_density_bluehead_chub", "adj_density_creek_chub" ,"adj_density_green_sunfish", "adj_density_redbreast_sunfish")
-strip1 <- strip_themed(background_x = elem_list_rect(fill = c("darkcyan", "maroon", "mediumpurple1", "steelblue3")))
+opp.labs <- c("Bluehead chub", 
+              "Creek chub", 
+              "Green sunfish", 
+              "Redbreast sunfish")
+names(opp.labs) <- c("w_density_bluehead_chub",
+                     "w_density_creek_chub",
+                     "w_density_green_sunfish",
+                     "w_density_redbreast_sunfish")
+
+strip1 <- strip_themed(background_x = elem_list_rect(fill = c("darkcyan",
+                                                              "maroon",
+                                                              "mediumpurple1",
+                                                              "steelblue3")))
 
 # Model estimate ----------------------------------------------------------
 
-dat_fig <- df_output %>% 
-  filter(str_detect(para, "b")) %>% 
-  mutate(para = case_when(var == '(Intercept)' ~ 'Intercept',
-                          var == 'log_length' ~ 'log Length',
-                          var == 'mean_temp' ~ 'Mean Temperature',
-                          var == 'velocity_mean' ~ "Velocity",
-                          var == 'area_ucb' ~ 'Habitat Refuge Area',
-                          var == 'adj_density_creek_chub' ~ 'Density Creek Chub',
-                          var == 'adj_density_bluehead_chub' ~ 'Density Bluehead Chub',
-                          var == 'adj_density_green_sunfish' ~ 'Density Green Sunfish',
-                          var == 'adj_density_redbreast_sunfish' ~ 'Density Redbreast Sunfish')) %>% 
-  mutate(para = factor(para, levels = rev(unique(para)))) %>% 
-  rowwise() %>% 
-  mutate(sig = ifelse(between(0, lower95, upper95), 
-                      "no",
-                      "yes")) 
+## define function for predictor labeling
+f_label <- function(x) {
+  sp_pattern <- df_mcmc %>% 
+    pull(species) %>% 
+    unique() %>% 
+    paste(collapse = "|")
+  
+  str_extract(x, pattern = sp_pattern) %>% 
+    str_replace_all(pattern = "_", replacement = " ")
+}
 
-#saveRDS(dat_fig, file = "data_fmt/data_est.rds")
+## dataframe for plot
+## - omit non-focus parameters from the figure
+df_mcmc_plot <- df_mcmc %>% 
+  filter(!(parm %in% c("p",
+                       "nu",
+                       "mean_temp",
+                       "velocity_mean",
+                       "area_ucb",
+                       "(Intercept)"))) %>% 
+  mutate(var_label = case_when(str_detect(parm, "w_density") ~ 
+                                 paste("Density",  f_label(parm)),
+                               parm == "log_length" ~ "log(Body length)") %>% 
+           factor(levels = rev(c("log(Body length)",
+                                 "Density bluehead chub",
+                                 "Density creek chub",
+                                 "Density green sunfish",
+                                 "Density redbreast sunfish"))),
+         sp_label = str_replace_all(species, "_", " ") %>% 
+           str_to_sentence()
+  ) %>% 
+  group_by(sp_label,
+           var_label) %>% 
+  mutate(med = median(value),
+         upper = quantile(value, 0.975),
+         lower = quantile(value, 0.025),
+         p_pos = mean(value > 0),
+         prob = max(p_pos, 1 - p_pos)
+  ) %>% 
+  ungroup() 
 
-
-# estimates faceted by species 
-
-(fig_est <- dat_fig %>% 
-  ggplot(aes(x = median, y = para, color = factor(sig))) +
-  geom_errorbar(aes(xmin = lower95, xmax = upper95),
-                width = 0,
-                position = pd) +
-  geom_point(position = pd) +
+## density ridge figure
+fig_est <- df_mcmc_plot %>% 
+  ggplot(aes(x = value,
+             y = var_label)) +
+  geom_density_ridges(scale = 0.9, 
+                      aes(fill = prob),
+                      # quantile_lines = TRUE,
+                      # quantiles = 2,
+                      color = grey(0.3, 0.8)) +
+  geom_segment(aes(x = lower,
+                   xend = upper),
+               color = grey(0.3, 0.8),
+               linewidth = 0.4,
+               lineend = "round") +
+  geom_point(aes(x = med),
+             color = grey(0.3, 0.8)) +
   geom_vline(xintercept = 0,
-             lty = "solid",
-             col = "gray") +
-  scale_color_manual(values = c("gray", "steelblue3")) + 
-  labs(y = NULL,
-       x = "Estimate") +
-    theme_set(plt_theme) +
-  theme(legend.position = "none") +
-  facet_wrap( ~ species, nrow = 2, ncol = 2, 
-              labeller = labeller(species = species.labs)))
+             linetype = "dashed",
+             alpha = 0.5) +
+  scale_fill_gradient(low = "white",
+                      high = "salmon") +
+  facet_wrap(~ sp_label,
+             scales = "free") +
+  theme_ridges() +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(margin = margin(b = 10))) +
+  labs(fill = "Posterior prob.",
+       x = "Estimate",
+       y = "Predictor")
 
+## export
 ggsave(fig_est,
        filename = "output/fig_est.pdf",
        height = 9,
        width = 12)
 
 
-# Effect of Body Size ---------------------------------------------------
+# prepare data frame for predicted values ---------------------------------
 
 x_name <- df_output %>% 
-  filter(var != "(Intercept)") %>% 
-  pull(var) %>% 
+  filter(str_detect(parm, "log_length|w_density")) %>% 
+  pull(parm) %>% 
   unique()
+
+qt_custum <- function(p, df, mu = 0, sigma = 1) {
+  qt(p, df) * sigma + mu
+}
 
 df_y <- foreach(k = usp, .combine = bind_rows) %do% {
   
   v_b <- df_output %>% 
-    filter(species == k) %>% 
+    filter(species == k,
+           parm %in% c("(Intercept)", x_name)) %>% 
+    pull(median)
+  
+  nu <- df_output %>% 
+    filter(species == k,
+           parm == "nu") %>% 
     pull(median)
   
   df_x <- foreach(v = x_name,
                   .combine = bind_rows) %do% {
+                    
                     bid <- which(c("(Intercept)", x_name) == v)        
                     
                     ## rename focused predictor name to `x`
-                    df_v <- df_combined %>%
+                    df_v <- df_move %>%
                       filter(species == k) %>% 
                       rename(x = all_of(v))
                     
@@ -159,9 +244,13 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                               scl_x = (x_value - mu_x) / sd_x,
                               species = rep(unique(species))) %>% 
                       mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
-                             y = (exp(log_sigma) * sqrt(2)) / sqrt(pi),
-                             focus = v,
-                             move = exp(log_sigma))
+                             y50 = qt_custum(p = 0.75,
+                                             df = nu,
+                                             sigma = exp(log_sigma)),
+                             y95 = qt_custum(p = 0.975,
+                                             df = nu,
+                                             sigma = exp(log_sigma)),
+                             focus = v)
                     
                     ## safer to specify what is a return object
                     return(cout)
@@ -169,59 +258,61 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
   
 }
 
+## prob_level - this sets whether predicted values show up in the figure
+## Pr(>0.95) for now
+## tweak the threshold if you want to change the figure
 df_fig <- df_y %>% 
   left_join(df_output,
             by = c("species",
-                   "focus" = "var")) %>% 
+                   "focus" = "parm")) %>% 
   rowwise() %>% 
-  mutate(sig = ifelse(between(0, lower95, upper95), 
-                      "no",
-                      "yes")) %>% 
+  mutate(prob_level = case_when(prob >= 0.95 ~ "high",
+                                prob < 0.95 ~ "low")) %>% 
   ungroup() 
 
-(fig_size <- df_combined %>%
-    drop_na(section1) %>% # figure only includes recap
-    ggplot(aes(x = log_length,
-               y = abs_move / intv,
-               color = species)) +
-    geom_point(alpha = 0.5) + ## add points
-    geom_line(data = df_fig %>% ## draw line
-                filter(focus == "log_length"),
-              aes(x = x_value,
-                  y = qnorm(.95 , mean = 0, sd = move),
-                  linetype = sig)) +
-    scale_linetype_manual(values = c("yes" = "solid",
-                                     "no" = "blank")) +
-    scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"),
-                       name="Species") +
-    geom_area(data = df_fig %>% ## draw shaded area
-                filter(focus == "log_length"),
-              aes(x = x_value,
-                  y = qnorm(.95 , mean = 0, sd = move),
-                  alpha = sig,
-                  fill = species,
-                  linetype = sig)) +
-    scale_alpha_manual(values = c("yes" = .5,
-                                  "no" = 0)) +
-    # geom_area(data = df_fig %>% ## draw shaded area
-    #             filter(focus == "log_length"),
-    #           aes(x = x_value,
-    #               y = qnorm(.75, mean = 0, sd = move),
-    #               alpha = sig,
-    #               fill = species,
-    #               linetype = sig)) +
-    # scale_alpha_manual(values = c("yes" = .7,
-    #                               "no" = 0)) +
-    scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
-    facet_wrap2(~ species,
-                scales = "free",
-                strip = strip1,
-                labeller = labeller(species = species.labs)) +
-    labs(x= "ln Length at Capture (ln mm)",
-         y= "Standard Deviation of Movement (m/day)") +
-    theme_set(plt_theme) +
-    theme(legend.position = "none",
-          strip.text = element_text(color = 'white'))) 
+# Effect of Body Size ---------------------------------------------------
+
+(fig_size <- df_move %>%
+   drop_na(section1) %>% # figure only includes recap
+   ggplot(aes(x = log_length,
+              y = abs_move / intv,
+              color = species)) +
+   geom_point(size = 0.8) + ## add points
+   scale_color_manual(values=c("darkcyan",
+                               "maroon",
+                               "mediumpurple1",
+                               "steelblue3"),
+                      name="Species") +
+   geom_area(data = df_fig %>% ## draw shaded area
+               filter(focus == "log_length"),
+             aes(x = x_value,
+                 y = y50,
+                 alpha = prob_level,
+                 fill = species),
+             color = NA) +
+   geom_area(data = df_fig %>% ## draw shaded area
+               filter(focus == "log_length"),
+             aes(x = x_value,
+                 y = y95,
+                 alpha = prob_level,
+                 fill = species),
+             color = NA) +
+   scale_alpha_manual(values = c("high" = .5,
+                                 "low" = 0)) +
+   scale_fill_manual(values=c("darkcyan",
+                              "maroon",
+                              "mediumpurple1",
+                              "steelblue3")) +
+   scale_x_continuous(labels = label_number(accuracy = 0.2)) +
+   facet_wrap2(~ species,
+               scales = "free",
+               strip = strip1,
+               labeller = labeller(species = species.labs)) +
+   labs(x= "ln(Body length at capture) (ln mm)",
+        y= "Absolute movement (m/day)") +
+   theme_set(plt_theme) +
+   theme(legend.position = "none",
+         strip.text = element_text(color = 'white'))) 
 
 ggsave(fig_size,
        filename = "output/fig_size.pdf",
@@ -230,62 +321,57 @@ ggsave(fig_size,
 
 # Effect of Density -------------------------------------------------------
 
-(fig_den <- df_combined %>% 
+(fig_den <- df_move %>% 
    select(species,
           intv,
           abs_move,
-          adj_density_bluehead_chub,
-          adj_density_creek_chub, 
-          adj_density_green_sunfish,
-          adj_density_redbreast_sunfish) %>% 
-   pivot_longer(cols = starts_with("adj_"),
+          w_density_bluehead_chub,
+          w_density_creek_chub, 
+          w_density_green_sunfish,
+          w_density_redbreast_sunfish) %>% 
+   pivot_longer(cols = starts_with("w_density"),
                 names_to = "opponent", 
                 values_to = "density") %>% 
    drop_na(abs_move) %>% 
    ggplot(aes(x = density,
               y = abs_move / intv, 
               color = species)) +
-   geom_point(alpha = 0.5) + ## add points
-   geom_line(data = df_fig %>% ## draw line
-               filter(str_detect(focus, "adj_density")) %>% 
-               rename(opponent = "focus"),
-             aes(x = x_value,
-                 y = qnorm(.95, mean = 0, sd = move),
-                 color = species,
-                 linetype = sig))  +
-   scale_linetype_manual(values = c("yes" = "solid",
-                                    "no" = "blank")) +
+   geom_point(size = 0.8) + ## add points
    geom_area(data = df_fig %>% ## draw shaded area
-               filter(str_detect(focus, "adj_density")) %>% 
+               filter(str_detect(focus, "w_density")) %>% 
                rename(opponent = "focus"),
              aes(x = x_value,
-                 y = qnorm(.95, mean = 0, sd = move),
-                 alpha = sig,
-                 fill = species,
-                 linetype = sig)) +
-   scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
-   scale_alpha_manual(values = c("yes" = .5,
-                                 "no" = 0)) +
-   # geom_area(data = df_fig %>% ## draw shaded area
-   #             filter(str_detect(focus, "adj_density")) %>% 
-   #             rename(opponent = "focus"),
-   #           aes(x = x_value,
-   #               y = qnorm(.75, mean = 0, sd = move),
-   #               alpha = sig,
-   #               fill = species,
-   #               linetype = sig)) +
-   # scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3")) +
-   # scale_alpha_manual(values = c("yes" = .7,
-   #                               "no" = 0)) +
+                 y = y50,
+                 alpha = prob_level,
+                 fill = species),
+             color = NA) +
+   geom_area(data = df_fig %>% ## draw shaded area
+               filter(str_detect(focus, "w_density")) %>% 
+               rename(opponent = "focus"),
+             aes(x = x_value,
+                 y = y95,
+                 alpha = prob_level,
+                 fill = species),
+             color = NA) +
+   scale_fill_manual(values=c("darkcyan",
+                              "maroon",
+                              "mediumpurple1",
+                              "steelblue3")) +
+   scale_alpha_manual(values = c("high" = .5,
+                                 "low" = 0)) +
    facet_grid(rows = vars(species),
               cols = vars(opponent),
               scales = "free",
               switch = "x",  # use switch = "y" to swap strip to the left side
-              labeller = labeller(species = species.labs, opponent = opp.labs)) +
-   scale_color_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"), 
+              labeller = labeller(species = species.labs,
+                                  opponent = opp.labs)) +
+   scale_color_manual(values = c("darkcyan",
+                                 "maroon",
+                                 "mediumpurple1",
+                                 "steelblue3"), 
                       name = "species") +
    labs(x= expression("Density (n /"~m^2*")"),
-        y= "Standard Deviation of Movement (m / day)") +
+        y= "Absolote movement (m / day)") +
    theme_set(plt_theme) +
    theme(legend.position = "none",
          strip.background = element_rect(color = "black"),
