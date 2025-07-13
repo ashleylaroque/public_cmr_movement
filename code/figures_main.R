@@ -244,10 +244,10 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                               scl_x = (x_value - mu_x) / sd_x,
                               species = rep(unique(species))) %>% 
                       mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
-                             y50 = qt_custum(p = 0.75,
+                             y50 = qt_custum(p = 0.75, # (0.75 - 0.5) * 2 = 0.50
                                              df = nu,
                                              sigma = exp(log_sigma)),
-                             y95 = qt_custum(p = 0.975,
+                             y90 = qt_custum(p = 0.95, # (0.95 - 0.5) * 2 = 0.90
                                              df = nu,
                                              sigma = exp(log_sigma)),
                              focus = v)
@@ -293,7 +293,7 @@ df_fig <- df_y %>%
    geom_area(data = df_fig %>% ## draw shaded area
                filter(focus == "log_length"),
              aes(x = x_value,
-                 y = y95,
+                 y = y90,
                  alpha = prob_level,
                  fill = species),
              color = NA) +
@@ -349,7 +349,7 @@ ggsave(fig_size,
                filter(str_detect(focus, "w_density")) %>% 
                rename(opponent = "focus"),
              aes(x = x_value,
-                 y = y95,
+                 y = y90,
                  alpha = prob_level,
                  fill = species),
              color = NA) +
