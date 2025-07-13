@@ -7,7 +7,33 @@ rm(list = ls())
 source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
-df_est <- readRDS("data_fmt/data_est.rds")
+
+df_est <- readRDS("data_fmt/output_move.rds") %>% 
+  bind_rows() %>% 
+  rename(species = "y",
+         median = "50%" ,
+         upper95 = "97.5%" ,
+         lower95 = "2.5%") %>% 
+  rowwise() %>% 
+  mutate(prob = max(p_pos, p_neg)) %>% 
+  ungroup() %>% 
+  drop_na(parm) %>% 
+  filter(species %in% c("bluehead_chub",
+                        "creek_chub",
+                        "green_sunfish",
+                        "redbreast_sunfish")) %>% 
+  mutate(parm = case_when(parm == "(Intercept)" ~ "Intercept",
+                          parm == "log_length" ~ "ln(Body length)",
+                          parm == "area_ucb" ~ "Habitat refuge area",
+                          parm == "velocity_mean" ~ "Current velocity",
+                          parm == "mean_temp" ~ "Temperature",
+                          parm == "w_density_bluehead_chub" ~ "Density bluehead chub",
+                          parm == "w_density_creek_chub" ~ "Density bluehead chub",
+                          parm == "w_density_green_sunfish" ~ "Density green sunfish",
+                          parm == "w_density_redbreast_sunfish" ~ "Density redbreast sunfish",
+                          parm == "p" ~ "Recapture probability",
+                          parm == "nu" ~ "d.f. in t distribution"))
+
 df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
@@ -99,10 +125,10 @@ print(xtable(tab_cap,
 # Table of Coefficients ---------------------------------------------------
 
 tab_coef <- df_est %>% 
-  select(species, para, lower95, upper95, median) %>% 
-  rename("Effect" = "para",
-         "Lower 95\\% CI" = "lower95",
-         "Upper 95\\% CI" = "upper95",
+  select(species, parm, median, p_neg, p_pos) %>% 
+  rename("Effect" = "parm",
+         "Pr(> 0)" = "p_pos",
+         "Pr(< 0)" = "p_neg",
          "Species" = "species",
          "Estimate" = "median") %>% 
   mutate(Species = str_to_sentence(Species) %>% 
@@ -112,7 +138,7 @@ tab_coef <- df_est %>%
 
 ## export
 print(xtable(tab_coef,
-             caption = "Parameter estimates of the movement model. Median estimates and their associated 95\\% credible intervals (95\\% CI) are reported.",
+             caption = "Parameter estimates of the movement model. Median estimates and their associated posterior probabilities are reported.",
              label = "tab:coefficients"),
       tabular.environment = "tabular", # use \begin{tabular}
       sanitize.text.function = function(x) x, # for math mode
