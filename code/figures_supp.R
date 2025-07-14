@@ -137,13 +137,11 @@ ggsave(fig_total_move,
 
 # Correlations of habitat -----------------------------------------------------------------
 
-
-
-chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean", 
-                                         "area", "area_ucb", "mean_temp")], 
-                         method="spearman", 
-                         histogram=TRUE, 
-                         cex = 10)
+# chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean", 
+#                                          "area", "area_ucb", "mean_temp")], 
+#                          method="spearman", 
+#                          histogram=TRUE, 
+#                          cex = 10)
 
 # PCA Habitat -------------------------------------------------------------
 
