@@ -62,36 +62,9 @@ n_chain <- 3
 
 list_mcmc <- foreach(x = usp) %do% {
   
-  df_i0 <- filter(df_move, species == x) %>%
+  df_i <- filter(df_move, species == x) %>%
     mutate(log_length = log(length0),
            area_ucb = sqrt(area_ucb))
-  
-  ## confine the range of predictors to those "recaptured"
-  ## - to stabilize statistical estimates (avoid over-extrapolation)
-  
-  ## - get max values for those recaptured
-  v_max <- df_i0 %>%
-    filter(y == 1) %>%
-    select(log_length, # log-trans total length of individual
-           area_ucb,
-           velocity_mean,
-           mean_temp,
-           w_density_bluehead_chub, # seasonally adjusted density
-           w_density_creek_chub,
-           w_density_green_sunfish,
-           w_density_redbreast_sunfish) %>%
-    sapply(max)
-  
-  ## - subset original data
-  df_i <- df_i0 %>%
-    filter(log_length <= v_max["log_length"],
-           area_ucb <= v_max["area_ucb"],
-           velocity_mean <= v_max["velocity_mean"],
-           mean_temp <= v_max["mean_temp"],
-           w_density_bluehead_chub <= v_max["w_density_bluehead_chub"],
-           w_density_creek_chub <= v_max["w_density_creek_chub"],
-           w_density_green_sunfish <= v_max["w_density_green_sunfish"],
-           w_density_redbreast_sunfish <= v_max["w_density_redbreast_sunfish"])
   
   ## data for jags
   list_jags <- with(df_i,
@@ -135,7 +108,7 @@ list_mcmc <- foreach(x = usp) %do% {
   for (j in 1:n_chain) inits[[j]]$.RNG.seed <- 100 * j
   
   ## - parameters to be monitored
-  para <- c("b", "p", "nu")
+  para <- c("b", "p", "nu", "D")
   
   ## model files
   m <- runjags::read.jagsfile("code/model_move.R")
@@ -187,7 +160,12 @@ list_est <- lapply(seq_len(length(list_mcmc)),
 ## return max Rhat value for each species
 ## each element represents max Rhat for each species
 v_rhat <- sapply(list_est,
-                 function(data) max(data$Rhat))
+                 function(data) {
+                   data %>% 
+                     filter(!str_detect(parm, "D\\[.*\\]")) %>% 
+                     pull(Rhat) %>% 
+                     max()
+                 })
 
 ## print max Rhat across species
 print(max(v_rhat))
