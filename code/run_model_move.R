@@ -131,6 +131,7 @@ list_mcmc <- foreach(x = usp) %do% {
                          
                          ## rename columns of each chain
                          colnames(chain)[1:ncol(X)] <- colnames(X)
+                         colnames(chain)[str_detect(colnames(chain), "D\\[.*\\]")] <- df_i$tag_id
                          return(chain)
                          
                        })
@@ -141,19 +142,55 @@ list_mcmc <- foreach(x = usp) %do% {
 names(list_mcmc) <- usp
 
 ## get summary estimates
-list_est <- lapply(seq_len(length(list_mcmc)),
-                   function(i) {
-                     
-                     mcmc <- list_mcmc[[i]]
-                     MCMCvis::MCMCsummary(mcmc) %>% 
-                       as_tibble(rownames = "parm") %>% 
-                       mutate(p_neg = MCMCvis::MCMCpstr(mcmc,
-                                                        func = function(x) mean(x < 0)) %>%
-                                unlist(),
-                              p_pos = 1 - p_neg) %>% 
-                       mutate(y = names(list_mcmc)[i])
-                     
-                   })
+df_est <- lapply(seq_len(length(list_mcmc)),
+                 function(i) {
+                   
+                   mcmc <- list_mcmc[[i]]
+                   p_neg <- MCMCvis::MCMCpstr(mcmc,
+                                              func = function(x) mean(x < 0)) %>% 
+                     unlist() %>% 
+                     { .[!str_detect(names(.), "^ID.*")] }
+                   
+                   MCMCvis::MCMCsummary(mcmc) %>% 
+                     as_tibble(rownames = "parm") %>% 
+                     filter(!str_detect(parm, "^ID.*")) %>% 
+                     mutate(p_neg = p_neg,
+                            p_pos = 1 - p_neg) %>% 
+                     mutate(y = names(list_mcmc)[i],
+                            parm = ifelse(str_detect(parm, ".*Intercept.*"),
+                                          "(Intercept)",
+                                          parm))
+                   
+                 }) %>% 
+  bind_rows() %>% 
+  rename(species = "y",
+         median = "50%" ,
+         upper95 = "97.5%" ,
+         lower95 = "2.5%") %>% 
+  rowwise() %>% 
+  mutate(prob = max(p_pos, p_neg)) %>% 
+  ungroup()
+
+## get predicted values
+df_pred <- lapply(seq_len(length(list_mcmc)),
+                  function(i) {
+                    
+                    mcmc <- list_mcmc[[i]]
+                    tag_id <- colnames(mcmc[[1]]) %>% 
+                      { .[str_detect(., "^ID\\d*")] }
+                    
+                    MCMCvis::MCMCsummary(mcmc) %>% 
+                      as_tibble(rownames = "parm") %>% 
+                      filter(str_detect(parm, "^ID*")) %>% 
+                      mutate(y = names(list_mcmc)[i],
+                             tag_id = tag_id) %>% 
+                      dplyr::select(tag_id,
+                                    pred = `50%`,
+                                    species = y)
+                    
+                  }) %>% 
+  bind_rows()
+
 
 # check convergence -------------------------------------------------------
 
@@ -175,7 +212,6 @@ print(max(v_rhat))
 ## results will not be exported unless converged
 if (max(v_rhat) < 1.1) {
   saveRDS(list_mcmc, file = "data_fmt/output_move_mcmc.rds")
-  saveRDS(list_est, file = "data_fmt/output_move.rds")
+  saveRDS(df_est, file = "data_fmt/output_move.rds")
+  saveRDS(df_pred, file = "data_fmt/output_move_pred.rds")
 }
-
-print(list_est)
