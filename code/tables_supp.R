@@ -28,7 +28,7 @@ df_est <- readRDS("data_fmt/output_move.rds") %>%
                           parm == "velocity_mean" ~ "Current velocity",
                           parm == "mean_temp" ~ "Temperature",
                           parm == "w_density_bluehead_chub" ~ "Density bluehead chub",
-                          parm == "w_density_creek_chub" ~ "Density bluehead chub",
+                          parm == "w_density_creek_chub" ~ "Density creek chub",
                           parm == "w_density_green_sunfish" ~ "Density green sunfish",
                           parm == "w_density_redbreast_sunfish" ~ "Density redbreast sunfish",
                           parm == "p" ~ "Recapture probability",
@@ -72,8 +72,10 @@ print(xtable(tab_size,
 # Mean density of each tagged species  ------------------------------------
 
 tab_den <- df_combined %>% 
-  select(adj_density_bluehead_chub, adj_density_creek_chub,
-         adj_density_green_sunfish, adj_density_redbreast_sunfish) %>% 
+  select(adj_density_bluehead_chub, 
+         adj_density_creek_chub,
+         adj_density_green_sunfish, 
+         adj_density_redbreast_sunfish) %>% 
   pivot_longer(cols = starts_with("adj_"),
                names_to = "opponent", 
                values_to = "density") %>% 
@@ -156,16 +158,16 @@ tab_hab <- df_h_sec %>%
   group_by(habitat_variable) %>% 
   summarise(Mean = mean(value),
             "Standard Deviation" = sd(value)) %>% 
-  mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area m" %p% supsc('2'),
-                                      habitat_variable == "width" ~ "Mean Width m",
-                                      habitat_variable == "section_length" ~ "Section Length m",
-                                      habitat_variable == "area_pool" ~ "Pool Area m" %p% supsc('2'),
-                                      habitat_variable == "area_riffle" ~ "Riffle Area m" %p% supsc('2'),
-                                      habitat_variable == "area_run" ~ "Run Area m" %p% supsc('2'),
-                                      habitat_variable == "area_ucb" ~ "Habitat Refuge Area m" %p% supsc('2'),
-                                      habitat_variable == "depth_mean" ~ "Mean Depth cm",
-                                      habitat_variable == "velocity_mean" ~ "Mean Velocity m/s",
-                                      habitat_variable == "substrate_mean" ~ "Mean Substrate mm")) %>% 
+  mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area ($m^2$)",
+                                      habitat_variable == "width" ~ "Mean Width (m)",
+                                      habitat_variable == "section_length" ~ "Section Length (m)",
+                                      habitat_variable == "area_pool" ~ "Pool Area ($m^2$)",
+                                      habitat_variable == "area_riffle" ~ "Riffle Area ($m^2$)",
+                                      habitat_variable == "area_run" ~ "Run Area ($m^2$)",
+                                      habitat_variable == "area_ucb" ~ "Habitat Refuge Area ($m^2$)",
+                                      habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
+                                      habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
+                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
   rename("Habitat Metric" = "habitat_variable") 
 
 
