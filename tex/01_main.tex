@@ -103,14 +103,18 @@ We calculated the surface area of each section as the mean wet width (measured a
 
 We used the dispersal-observation model to evaluate the effects of both intrinsic and extrinsic variables on movement behaviors \citep{teruiModelingDispersalUsing2020, teruiNonrandomDispersalSympatric2021, teruiParasiteInfectionInduces2017, rodriguezRestrictedMovementStream2002}. This modeling approach fundamentally differs from ordinary linear models (e.g., generalized linear models) in two key ways. First, it integrates movement and observation processes into a single model. In field studies, observed movement is often confounded by imperfect detection and unmeasured emigration or mortality. The dispersal-observation model yields less biased estimates of movement parameters by explicitly accounting for these factors \citep{teruiModelingDispersalUsing2020}. Second, this framework models the \textit{dispersion} parameter of the movement kernel, i.e., the spread of movement distances, as a function of linear predictors. This contrasts with conventional linear models, which typically relate predictors to the \textit{mean} of a distribution. As a result, this approach more appropriately captures variation in movement behavior across ecological contexts \citep{teruiModelingDispersalUsing2020, pepinoFishDispersalFragmented2012, rodriguezRestrictedMovementStream2002}.
 
-\textit{Movement process}. We define movement as fine-scale shifts over habitat patches that occur between consecutive recapture events (i.e., movement between occasion $t$ and $t+1$). Let $X_{1,i}$ and $X_{0,i}$ denote locations of recapture at occasion $t+1$ and capture at occasion $t$ for individual replicate $i$, which were measured as the distance from the midpoint of the section to the downstream end of the study stretch. We assumed $X_{1,i}$ as a random draw from a normal distribution conditional on the capture location $X_{0,i}$ as:    
+\textit{Movement process}. We define movement as fine-scale shifts over habitat patches that occur between consecutive recapture events (i.e., movement between occasion $t$ and $t+1$). Let $X_{1,i}$ and $X_{0,i}$ denote locations of recapture at occasion $t+1$ and capture at occasion $t$ for individual replicate $i$, which were measured as the distance from the midpoint of the section to the downstream end of the study stretch. We assumed $X_{1,i}$ as a random draw from a Student-t distribution conditional on the capture location $X_{0,i}$ as:    
 
 \begin{equation}
-    X_{1, i}|X_{0, i}, \sigma_i \sim \text{Normal}(X_{0, i}, \sigma_i^2)
+    X_{1, i}|X_{0, i}, \sigma_i \sim \text{t}(X_{0, i}, \sigma_i^2, \nu)
     \label{eq:normal}
 \end{equation}
 
-where $\sigma_i$ is the standard deviation describing the distance moved between consecutive capture and recapture occasions ($X_{1,i} - X_{0,i}$).
+where $\sigma_i$ is the standard deviation describing the distance moved between consecutive capture and recapture occasions ($X_{1,i} - X_{0,i}$), and $\nu$ is the degree of freedom.
+We chose a Student-t distribution because movement data are often heavy-tailed \citep{clobertDispersalEcologyEvolution2012}.
+The degrees of freedom parameter, $\nu$, controls the extent of heavy-tailedness, with lower values indicating fatter tails. As $\nu$ approaches infinity, the Student-t distribution converges to a normal distribution.
+Using a Student-t distribution allows us to draw robust inferences about the ecological drivers of movement by properly accounting for outliers; i.e., the coefficient estimates remain relatively insensitive to them (see Equation \ref{eq:linear-pred}).
+
 We linked the standard deviation of  movement distance to predictors using a log-link function: 
 
 \begin{equation}
@@ -120,7 +124,14 @@ We linked the standard deviation of  movement distance to predictors using a log
 
 where $\beta_0$ is the intercept and $\beta_k$ is the regression coefficient for the $k$-th predictor $x_{k,i}$. The log-transformed time interval between capture and recapture $\ln \eta_i$ [ln day] was included as an offset term to standardize the movement duration between observations.
 
-In our model, we included body size at capture as a proxy variable for the individual’s locomotive capacity, whereas the densities of bluehead chub, creek chub, green sunfish, and redbreast sunfish at capture sections were included to evaluate intra- and interspecific density-dependence in movement. These densities were corrected for imperfect detection of the study species (Supporting Information). We included mean water temperature (mean of each sampling interval), velocity, and HRA to control possible effects of movement seasonality and microhabitat structure. HRAs often provide microhabitats harboring a considerable number of individuals.  Other habitat variables, such as depth and substrate, were not included due to their correlative nature with velocity. 
+Our model included the following predictors ($x_k$ in Equation \ref{eq:linear-pred}): body size, weighted densities of dominant fish species (bluehead chub, creek chub, green sunfish, and redbreast sunfish), mean water temperature, HRA, and current velocity.
+We included body size at capture as a proxy variable for the individual’s locomotive capacity (internal factor), whereas the weighted fish densities were included to evaluate intra- and interspecific density-dependence in movement (external factors).
+Fish densities were weighted by distance to the capture location to reflect that fish individuals in close proximity may have a greater influence on movement.
+Specifically, the distance-weighted fish density at section $s$, denoted $D^{(w)}_s$, was calculated as $D^{(w)}_s = \sum_{s'} D_{s'}\exp(-\lambda d_{ss'})$, where $D_{s'}$ is the fish density corrected for season-specific imperfect detection (see SI), $d_{ss'}$ is the separation distance between the midpoints of sections $s$ and $s'$, and $\lambda$ is a rate parameter that defines how quickly the density weight decays with increasing separation distance. 
+We set $\lambda = 0.1$, indicating that density influences are strongest within approximately 10 meters, while still allowing for non-negligible contributions from greater distances.
+We chose this value because previous studies have consistently shown that stream fishes typically remain within 10–20 meters over extended periods, although some individuals do disperse over longer distances \citep{skalskiModelingDiffusiveSpread2000, pepinoFishDispersalFragmented2012, rodriguezRestrictedMovementStream2002, teruiNonrandomDispersalSympatric2021, radingerPatternsPredictorsFish2014}.
+
+In our model, mean water temperature (averaged over each sampling interval) was included to account for potential seasonality in movement patterns, and HRA and current velocity were incorporated to control for possible effects of microhabitat structure variation between sections. HRAs often provide microhabitats that harbor a considerable number of individuals. Other habitat variables, such as depth and substrate, were not included due to their correlation with velocity. The inclusion of these predictors allows the model to evaluate the effects of body size and fish densities after accounting for potential influences of confounding factors.
 
 \textit{Observation process}. Our capture-recapture data is the imperfect representation of movement processes because fish are recaptured only when the following conditions are satisfied simultaneously: alive, stay, and detected in the study section. Our observation model accounts for this process by describing the recapture state $Y_i$ (1 if recaptured 0 otherwise) as random draws from a Bernoulli distribution:
 
@@ -142,34 +153,49 @@ The latent variable $z_i$ was determined by the observed (if recaptured) or pred
 $L$ is the upstream terminal of the study reach ($L = 430$). When $X_{1,i}$ was unobserved (i.e., not recaptured), a predicted value was drawn from Equation \ref{eq:normal} through the Markov Chain Monte Carlo simulations (see below), thus accounting for the observation process when estimating the movement parameter $\sigma_i$.
 This coupling of observation and movement processes accounts for permanent emigration and yields less biased estimates of movement parameters \citep{teruiModelingDispersalUsing2020}.
 
-The model was fitted to the data for each species separately using JAGS \citep{plummerJAGSProgramAnalysis2003}. Weakly informative priors were assigned to parameters: $\text{Normal}(0, 10^2)$ for intercept $\beta_0$ and coefficient $\beta_0$, and $\text{Trunc}(\text{Normal}(0.5, 1^2), 0, 1)$ for recapture probability $\phi$. Markov chain Monte Carlo (MCMC) simulations were run for 30,000 iterations with a 1,000 burn-in period and we retained 1,000 samples per chain by thinning every 40 steps to calculate posterior probabilities. Model convergence was checked by ensuring that the potential scale reduction factor, referred to as R-hat, was less than 1.1 for all parameters. All statistical analyses were conducted in R version 4.4.0 \citep{rcoreteamLanguageEnvironmentStatistical2021}.
+The model was fitted to the data for each species separately using JAGS \citep{plummerJAGSProgramAnalysis2003}. Weakly informative priors were assigned to parameters: $\text{Normal}(0, 2.5^2)$ for intercept $\beta_0$, $\text{Normal}(0, 1^2)$ for coefficients $\beta_k$, $\text{Trunc}(\text{Normal}(0.5, 1^2), 0, 1)$ for recapture probability $\phi$, and $\text{Trunc}(\text{Exp}(0.01), 3, \infty)$ for the degree of freedom $\nu$. Markov chain Monte Carlo (MCMC) simulations were run for 30,000 iterations with a 1,000 burn-in period and we retained 1,000 samples per chain by thinning every 40 steps to calculate posterior probabilities. Model convergence was checked by ensuring that the potential scale reduction factor, referred to as R-hat, was less than 1.1 for all parameters. All statistical analyses were conducted in R version 4.4.0 \citep{rcoreteamLanguageEnvironmentStatistical2021}.
 
 \section{Results}
 
-Across 15 occasions, we tagged 2,430 unique individuals of our target species with 324 of those consecutively recaptured (replicates). Absolute movement distances ranged from 0m to 390m across species and seasons. Mean and standard deviation length of redbreast sunfish (96.2 $\pm$ 24.4 mm) was the largest followed by creek chubs (92.4 $\pm$ 21.1 mm), bluehead chub (91.4 $\pm$ 21.0 mm), and lastly green sunfish (84.6 $\pm$ 18.4 mm). Mean and standard deviation density was highest among creek chubs (0.62 $\pm$ 0.55) followed by green sunfish (0.51 $\pm$ 0.50), bluehead chub (0.30 $\pm$ 0.32), and redbreast sunfish (0.29 $\pm$ 0.48). Thus, our data captured sufficient variation in body size and population densities. 
+Across 15 sampling occasions, we tagged 2,430 unique individuals of our target species, 324 of which were recaptured at least once in consecutive surveys.  
+Absolute movement distances ranged from 0 to 390 m across species and seasons.  
+Redbreast sunfish exhibited the largest mean body size ($96.2 \pm 24.4$ mm), followed by creek chub ($92.4 \pm 21.1$ mm), bluehead chub ($91.4 \pm 21.0$ mm), and green sunfish ($84.6 \pm 18.4$ mm) (SI, Table S1).
+Creek chub was the most abundant species ($0.62 \pm 0.55$ individuals/m$^2$), followed by green sunfish ($0.51 \pm 0.50$), bluehead chub ($0.30 \pm 0.32$), and redbreast sunfish ($0.29 \pm 0.48$) (SI, Table S2).  
+
 \begin{figure}
     \centering
     \includegraphics[width=0.9\linewidth]{output/fig_est.pdf}
-    \caption{Parameter estimates from the dispersal-observation model. Median estimates are denoted by points with error bars showing the 95\% credible interval. Colors differentiate between significance with gray error bars showing insignificance, while blue lines are significant results.}
+    \caption{Posterior distributions for parameters in the dispersal-observation model. Median estimates are denoted by points with error bars showing the traditional 95\% credible interval. 
+    Distributions are colored in proportion to the posterior probability of each parameter (approximated as the proportion of MCMC samples above or below zeros).
+    Higher values of the posterior probability indicate statistically robust effects.
+    Note that our model also included mean water temperature, habitat refuge area, and current velocity to minimize potential bias in estimating the effects of body size and fish densities.
+    Full parameter estimates are provided in Table S4.}
     \label{fig:fig_est}
 \end{figure}
-Our model revealed that movement based on length and density is species-specific with similar trends exhibited at the family-level (Figure \ref{fig:fig_est}). In cyprinid species, both species tended to increase movement distance with their body size, although the effect was insignificant for bluehead chub (Figure \ref{fig:fig_size}). Body size had contrasting influences on centrachid species, with larger individuals moving more in green sunfish (Figure \ref{fig:fig_size}). However, the effect of size on redbreast sunfish was insignificant.
+
+Our model revealed that movement responses to body size and density are highly species-specific (Figure \ref{fig:fig_est}). Creek chub and green sunfish increased movement distance with their body size, and their posterior probabilities were greater than 0.95 (Figures \ref{fig:fig_est} and \ref{fig:fig_size}; see also Table S4). 
+However, the movement patterns of bluehad chub and redbreast sunfish showed vague relationships with body size, with the posterior distributions centered around zero (Figure \ref{fig:fig_est}).
+
 \begin{figure}
     \centering
     \includegraphics[width=0.75\linewidth]{output/fig_size.pdf}
-    \caption{Response of body size on movement distance. Panels and colors show absolute movement per day of each species in response to an individual's total length at capture. Points represent actual values for each recaptured individual. Lines indicate the modeled movement estimate in response to length (significant = solid, insignificant = dashed).}
+    \caption{Influence of body size (total body length at capture) on movement distance. Panels and colors distinguish species. Points represent observed values for each recaptured individual. Dark and light shades indicate movement ranges that are predicted to encompass 50\% and 90\% of individuals by the observation-dispersal model. Shades are not shown when the posterior probability of the body size effect was less than 0.95. Full parameter estimates are provided in Table S4.}
     \label{fig:fig_size}
 \end{figure}
-Cyprinid species (creek chub and bluehead chub) responded vaguely to population densities. Two exceptions exist: the negative effect of redbreast sunfish on creek chub, and the positive effect of bluehead chub on bluehead chub (Figure \ref{fig:fig_density}). The bluehead chub species was the only one to respond significantly to their conspecific densities. Centrarchid species responded more clearly to population densities. Green sunfish responded to high densities of redbreast sunfish by reducing movements. Both species increased their movements as the density of creek chub increases, while decreasing movements in areas with a high density of bluehead chub (Figure \ref{fig:fig_density}).
+
+Interspecific density-dependence in movement was observed in green sunfish and redbreast sunfish. Posterior distributions indicated that both species responded positively to the density of creek chub (Figures \ref{fig:fig_est} and \ref{fig:fig_density}), suggesting that these species moved away from areas with high population density of creek chub. 
+In contrast, they tended to stay in areas with high population density of bluehead chub (Figure \ref{fig:fig_est}).
+Bluehead chub and creek chub showed vague responses to other species' densities, although creek chub showed a marginal response to the densities of bluehead chub and green sunfish.
+Interestingly, no species showed strong evidence of intraspecific density dependence in movement (Figure \ref{fig:fig_est}).
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth]{output/fig_density.pdf}
-    \caption{Response of density on movement distance. Each panel describes the absolute movement of a species (rows) in response to the density of a given species (column). Colors represent species. Diagonally, the response to intraspecific interactions are shown, while anything outside the diagonal is the response to interspecific interactions. Points represent actual values for each recaptured individual. Lines indicate the modeled movement estimate in response to density (significant = solid, insignificant = dashed).}
+    \caption{Influence of density on movement distance. Rows represent species responding to intra- and interspecific densities, while columns indicate the species whose population densities influence movement. Each panel describes the absolute movement of a species in response to the density of a given species. Colors represent response species. Diagonal panels show the response to intraspecific density, while the off-diagonal panels indicate the response to interspecific densities. Points represent observed values for each recaptured individual. Dark and light shades indicate movement ranges that are predicted to encompass 50\% and 90\% of individuals by the observation-dispersal model. Shades are not shown when the posterior probability of the density effect was less than 0.95. Full statistics are provided in Table S4.}
     \label{fig:fig_density}
 \end{figure}
 
-Both centrarchid species responded to undercut bank areas. Green sunfish movements increased as HRA increased, while redbreast sunfish movements declined. Neither cyprinid species was impacted by HRA. Temperature was only significant for bluehead chub by minimizing movements as temperature increased. Velocity had a negative effect on all four species except for bluehead chub, driving less movement as velocity increases. 
+Green sunfish and redbreast sunfish reduced their movement in response to increasing HRA. Neither bluehead chub nor creek chub was influenced by HRA. The effect of current velocity was evident only for redbreast sunfish, which exhibited reduced movement distances in areas with swift currents. Temperature had a substantial effect only on bluehead chub, which showed reduced movement during warmer periods. These results were summarized in  Table S4.
 
 \section{Discussion}
 
