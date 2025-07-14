@@ -14,7 +14,7 @@ df_move0 <- readRDS("data_fmt/data_move.rds") %>%
 df_den_w <- readRDS("data_fmt/data_density.rds") %>% 
   pivot_wider(id_cols = c(occasion, section, area),
               names_from = species,
-              values_from = c(n, w_density))
+              values_from = c(n, adj_density, w_density))
 
 df_h <- readRDS("data_fmt/data_habitat.rds") %>% 
   dplyr::select(-area)
