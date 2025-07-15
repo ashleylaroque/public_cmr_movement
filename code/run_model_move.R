@@ -220,6 +220,11 @@ print(max(v_rhat))
 
 # export ------------------------------------------------------------------
 
+list_mcmc <- lapply(list_mcmc, function(x) {
+  MCMCvis::MCMCchains(x) %>% 
+    { .[, !str_detect(colnames(.), "^ID.*")]}
+})
+
 ## results will not be exported unless converged
 if (max(v_rhat) < 1.1) {
   saveRDS(list_mcmc, file = "data_fmt/output_move_mcmc.rds")

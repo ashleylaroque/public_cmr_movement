@@ -24,13 +24,7 @@ df_move <- readRDS("data_fmt/data_combined.rds") %>%
                         "redbreast_sunfish"))# comes from 'run_model_move'
 
 ## mcmc samples
-list_mcmc <- readRDS("data_fmt/output_move_mcmc.rds") %>% 
-  lapply(FUN = function(x) {
-    
-    MCMCvis::MCMCchains(x) %>% 
-      {.[, !str_detect(colnames(.), "^ID.*")]}
-      
-  })
+list_mcmc <- readRDS("data_fmt/output_move_mcmc.rds")
 
 df_mcmc <- lapply(X = seq_len(length(list_mcmc)),
                   FUN = function(i) {
