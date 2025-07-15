@@ -9,15 +9,6 @@ source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
 
 df_est <- readRDS("data_fmt/output_move.rds") %>% 
-  bind_rows() %>% 
-  rename(species = "y",
-         median = "50%" ,
-         upper95 = "97.5%" ,
-         lower95 = "2.5%") %>% 
-  rowwise() %>% 
-  mutate(prob = max(p_pos, p_neg)) %>% 
-  ungroup() %>% 
-  drop_na(parm) %>% 
   filter(species %in% c("bluehead_chub",
                         "creek_chub",
                         "green_sunfish",
