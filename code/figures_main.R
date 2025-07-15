@@ -16,7 +16,8 @@ df_move <- readRDS("data_fmt/data_combined.rds") %>%
          season = ifelse(between(month, 4, 9),
                          yes = 1, # summer
                          no = 0),
-         log_length = log(length0)) %>% 
+         log_length = log(length0),
+         area_ucb = sqrt(area_ucb)) %>% 
   filter(species %in% c("bluehead_chub",
                         "creek_chub",
                         "green_sunfish",
@@ -24,7 +25,12 @@ df_move <- readRDS("data_fmt/data_combined.rds") %>%
 
 ## mcmc samples
 list_mcmc <- readRDS("data_fmt/output_move_mcmc.rds") %>% 
-  lapply(FUN = MCMCvis::MCMCchains) 
+  lapply(FUN = function(x) {
+    
+    MCMCvis::MCMCchains(x) %>% 
+      {.[, !str_detect(colnames(.), "^ID.*")]}
+      
+  })
 
 df_mcmc <- lapply(X = seq_len(length(list_mcmc)),
                   FUN = function(i) {
@@ -41,15 +47,6 @@ df_mcmc <- lapply(X = seq_len(length(list_mcmc)),
 
 ## mcmc summary
 df_output <- readRDS("data_fmt/output_move.rds") %>% 
-  bind_rows() %>% 
-  rename(species = "y",
-         median = "50%" ,
-         upper95 = "97.5%" ,
-         lower95 = "2.5%") %>% 
-  rowwise() %>% 
-  mutate(prob = max(p_pos, p_neg)) %>% 
-  ungroup() %>% 
-  drop_na(parm) %>% 
   filter(species %in% c("bluehead_chub",
                         "creek_chub",
                         "green_sunfish",
@@ -138,7 +135,8 @@ df_mcmc_plot <- df_mcmc %>%
                        "mean_temp",
                        "velocity_mean",
                        "area_ucb",
-                       "(Intercept)"))) %>% 
+                       "(Intercept)")),
+         !str_detect(parm, "D\\[.*\\]")) %>% 
   mutate(var_label = case_when(str_detect(parm, "w_density") ~ 
                                  paste("Density",  f_label(parm)),
                                parm == "log_length" ~ "log(Body length)") %>% 
@@ -270,15 +268,28 @@ df_fig <- df_y %>%
                                 prob < 0.95 ~ "low")) %>% 
   ungroup() 
 
+df_pred <- readRDS("data_fmt/output_move_pred.rds") %>% 
+  mutate(log_length = log(length0),
+         obs = !is.na(section1)) %>% 
+  rename(abs_move = pred)
+  
+
 # Effect of Body Size ---------------------------------------------------
 
-(fig_size <- df_move %>%
-   drop_na(section1) %>% # figure only includes recap
+df_size <- df_pred %>% 
+  group_by(species) %>% 
+  filter(between(log_length,
+                 min(log_length[obs]),
+                 max(log_length[obs]))) %>% 
+  ungroup()
+
+(fig_size <- df_size %>%
+   filter(obs) %>% # figure only includes recap
    ggplot(aes(x = log_length,
-              y = abs_move / intv,
+              y = abs_move,
               color = species)) +
-   geom_point(size = 0.8) + ## add points
-   scale_color_manual(values=c("darkcyan",
+    geom_point(size = 1) + ## add points
+    scale_color_manual(values=c("darkcyan",
                                "maroon",
                                "mediumpurple1",
                                "steelblue3"),
@@ -359,11 +370,12 @@ ggsave(fig_size,
                               "steelblue3")) +
    scale_alpha_manual(values = c("high" = .5,
                                  "low" = 0)) +
-   facet_grid(rows = vars(species),
-              cols = vars(opponent),
-              scales = "free",
-              switch = "x",  # use switch = "y" to swap strip to the left side
-              labeller = labeller(species = species.labs,
+   facet_grid2(rows = vars(species),
+               cols = vars(opponent),
+               independent = "all",
+               scales = "free",
+               switch = "x",  # use switch = "y" to swap strip to the left side
+               labeller = labeller(species = species.labs,
                                   opponent = opp.labs)) +
    scale_color_manual(values = c("darkcyan",
                                  "maroon",
@@ -391,7 +403,7 @@ grid.draw(fig_density)
 
 ggsave(fig_density,
        filename = "output/fig_density.pdf",
-       height = 10,
-       width = 12)
+       height = 12,
+       width = 13)
 
 
