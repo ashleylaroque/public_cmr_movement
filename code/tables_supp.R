@@ -149,13 +149,13 @@ tab_hab <- df_h_sec %>%
   group_by(habitat_variable) %>% 
   summarise(Mean = mean(value),
             "Standard Deviation" = sd(value)) %>% 
-  mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area ($m^2$)",
+  mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area (m$^2$)",
                                       habitat_variable == "width" ~ "Mean Width (m)",
                                       habitat_variable == "section_length" ~ "Section Length (m)",
-                                      habitat_variable == "area_pool" ~ "Pool Area ($m^2$)",
-                                      habitat_variable == "area_riffle" ~ "Riffle Area ($m^2$)",
-                                      habitat_variable == "area_run" ~ "Run Area ($m^2$)",
-                                      habitat_variable == "area_ucb" ~ "Habitat Refuge Area ($m^2$)",
+                                      habitat_variable == "area_pool" ~ "Pool Area (m$^2$)",
+                                      habitat_variable == "area_riffle" ~ "Riffle Area (m$^2$)",
+                                      habitat_variable == "area_run" ~ "Run Area (m$^2$)",
+                                      habitat_variable == "area_ucb" ~ "Habitat Refuge Area (m$^2$)",
                                       habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
                                       habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
                                       habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
