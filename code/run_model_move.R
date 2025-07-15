@@ -39,7 +39,20 @@ df_move <- df_move0 %>% # movement dataframe
                        median(intv, na.rm = TRUE),
                        intv)) %>% 
   ungroup() %>% 
-  select(-c(starts_with("n_")))
+  select(-c(starts_with("n_"))) %>% 
+  filter(species %in% c("bluehead_chub",
+                        "creek_chub",
+                        "green_sunfish",
+                        "redbreast_sunfish")) %>% 
+  mutate(uid = paste0(species,
+                      occasion0,
+                      section0,
+                      tag_id, 
+                      sep = "-") %>% 
+           factor() %>% 
+           as.numeric() %>% 
+           str_pad(width = 4, pad = "0") %>% 
+           paste0("ID", .))
 
 saveRDS(df_move, file = "data_fmt/data_combined.rds")
 
@@ -131,7 +144,7 @@ list_mcmc <- foreach(x = usp) %do% {
                          
                          ## rename columns of each chain
                          colnames(chain)[1:ncol(X)] <- colnames(X)
-                         colnames(chain)[str_detect(colnames(chain), "D\\[.*\\]")] <- df_i$tag_id
+                         colnames(chain)[str_detect(colnames(chain), "D\\[.*\\]")] <- df_i$uid
                          return(chain)
                          
                        })
@@ -170,39 +183,37 @@ df_est <- lapply(seq_len(length(list_mcmc)),
   rowwise() %>% 
   mutate(prob = max(p_pos, p_neg)) %>% 
   ungroup()
-
+  
 ## get predicted values
-df_pred <- lapply(seq_len(length(list_mcmc)),
-                  function(i) {
-                    
-                    mcmc <- list_mcmc[[i]]
-                    tag_id <- colnames(mcmc[[1]]) %>% 
-                      { .[str_detect(., "^ID\\d*")] }
-                    
-                    MCMCvis::MCMCsummary(mcmc) %>% 
-                      as_tibble(rownames = "parm") %>% 
-                      filter(str_detect(parm, "^ID*")) %>% 
-                      mutate(y = names(list_mcmc)[i],
-                             tag_id = tag_id) %>% 
-                      dplyr::select(tag_id,
-                                    pred = `50%`,
-                                    species = y)
-                    
-                  }) %>% 
-  bind_rows()
-
+df_pred <- foreach(i = seq_len(length(usp)),
+                   .combine = bind_rows) %do% {
+                     
+                     df_i <- df_move %>% 
+                       filter(species == usp[i])
+                     
+                     mcmc <- list_mcmc[[i]]
+                     uid <- colnames(mcmc[[1]]) %>% 
+                       { .[str_detect(., "^ID\\d*")] }
+                     
+                     df_p <- MCMCvis::MCMCsummary(mcmc) %>% 
+                       as_tibble(rownames = "parm") %>% 
+                       filter(str_detect(parm, "^ID*")) %>% 
+                       mutate(y = names(list_mcmc)[i],
+                              uid = parm) %>% 
+                       dplyr::select(uid,
+                                     pred = `50%`,
+                                     species = y) %>% 
+                       left_join(df_i,
+                                 by = c("uid", "species"))
+                     
+                     return(df_p)
+                   }
 
 # check convergence -------------------------------------------------------
 
 ## return max Rhat value for each species
 ## each element represents max Rhat for each species
-v_rhat <- sapply(list_est,
-                 function(data) {
-                   data %>% 
-                     filter(!str_detect(parm, "D\\[.*\\]")) %>% 
-                     pull(Rhat) %>% 
-                     max()
-                 })
+v_rhat <- df_est$Rhat
 
 ## print max Rhat across species
 print(max(v_rhat))
