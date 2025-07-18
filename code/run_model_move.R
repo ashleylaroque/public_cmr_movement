@@ -39,7 +39,20 @@ df_move <- df_move0 %>% # movement dataframe
                        median(intv, na.rm = TRUE),
                        intv)) %>% 
   ungroup() %>% 
-  select(-c(starts_with("n_")))
+  select(-c(starts_with("n_"))) %>% 
+  filter(species %in% c("bluehead_chub",
+                        "creek_chub",
+                        "green_sunfish",
+                        "redbreast_sunfish")) %>% 
+  mutate(uid = paste0(species,
+                      occasion0,
+                      section0,
+                      tag_id, 
+                      sep = "-") %>% 
+           factor() %>% 
+           as.numeric() %>% 
+           str_pad(width = 4, pad = "0") %>% 
+           paste0("ID", .))
 
 saveRDS(df_move, file = "data_fmt/data_combined.rds")
 
@@ -62,36 +75,9 @@ n_chain <- 3
 
 list_mcmc <- foreach(x = usp) %do% {
   
-  df_i0 <- filter(df_move, species == x) %>%
+  df_i <- filter(df_move, species == x) %>%
     mutate(log_length = log(length0),
            area_ucb = sqrt(area_ucb))
-  
-  ## confine the range of predictors to those "recaptured"
-  ## - to stabilize statistical estimates (avoid over-extrapolation)
-  
-  ## - get max values for those recaptured
-  v_max <- df_i0 %>%
-    filter(y == 1) %>%
-    select(log_length, # log-trans total length of individual
-           area_ucb,
-           velocity_mean,
-           mean_temp,
-           w_density_bluehead_chub, # seasonally adjusted density
-           w_density_creek_chub,
-           w_density_green_sunfish,
-           w_density_redbreast_sunfish) %>%
-    sapply(max)
-  
-  ## - subset original data
-  df_i <- df_i0 %>%
-    filter(log_length <= v_max["log_length"],
-           area_ucb <= v_max["area_ucb"],
-           velocity_mean <= v_max["velocity_mean"],
-           mean_temp <= v_max["mean_temp"],
-           w_density_bluehead_chub <= v_max["w_density_bluehead_chub"],
-           w_density_creek_chub <= v_max["w_density_creek_chub"],
-           w_density_green_sunfish <= v_max["w_density_green_sunfish"],
-           w_density_redbreast_sunfish <= v_max["w_density_redbreast_sunfish"])
   
   ## data for jags
   list_jags <- with(df_i,
@@ -135,7 +121,7 @@ list_mcmc <- foreach(x = usp) %do% {
   for (j in 1:n_chain) inits[[j]]$.RNG.seed <- 100 * j
   
   ## - parameters to be monitored
-  para <- c("b", "p", "nu")
+  para <- c("b", "p", "nu", "D")
   
   ## model files
   m <- runjags::read.jagsfile("code/model_move.R")
@@ -158,6 +144,7 @@ list_mcmc <- foreach(x = usp) %do% {
                          
                          ## rename columns of each chain
                          colnames(chain)[1:ncol(X)] <- colnames(X)
+                         colnames(chain)[str_detect(colnames(chain), "D\\[.*\\]")] <- df_i$uid
                          return(chain)
                          
                        })
@@ -168,36 +155,79 @@ list_mcmc <- foreach(x = usp) %do% {
 names(list_mcmc) <- usp
 
 ## get summary estimates
-list_est <- lapply(seq_len(length(list_mcmc)),
-                   function(i) {
+df_est <- lapply(seq_len(length(list_mcmc)),
+                 function(i) {
+                   
+                   mcmc <- list_mcmc[[i]]
+                   p_neg <- MCMCvis::MCMCpstr(mcmc,
+                                              func = function(x) mean(x < 0)) %>% 
+                     unlist() %>% 
+                     { .[!str_detect(names(.), "^ID.*")] }
+                   
+                   MCMCvis::MCMCsummary(mcmc) %>% 
+                     as_tibble(rownames = "parm") %>% 
+                     filter(!str_detect(parm, "^ID.*")) %>% 
+                     mutate(p_neg = p_neg,
+                            p_pos = 1 - p_neg) %>% 
+                     mutate(y = names(list_mcmc)[i],
+                            parm = ifelse(str_detect(parm, ".*Intercept.*"),
+                                          "(Intercept)",
+                                          parm))
+                   
+                 }) %>% 
+  bind_rows() %>% 
+  rename(species = "y",
+         median = "50%" ,
+         upper95 = "97.5%" ,
+         lower95 = "2.5%") %>% 
+  rowwise() %>% 
+  mutate(prob = max(p_pos, p_neg)) %>% 
+  ungroup()
+  
+## get predicted values
+df_pred <- foreach(i = seq_len(length(usp)),
+                   .combine = bind_rows) %do% {
+                     
+                     df_i <- df_move %>% 
+                       filter(species == usp[i])
                      
                      mcmc <- list_mcmc[[i]]
-                     MCMCvis::MCMCsummary(mcmc) %>% 
-                       as_tibble(rownames = "parm") %>% 
-                       mutate(p_neg = MCMCvis::MCMCpstr(mcmc,
-                                                        func = function(x) mean(x < 0)) %>%
-                                unlist(),
-                              p_pos = 1 - p_neg) %>% 
-                       mutate(y = names(list_mcmc)[i])
+                     uid <- colnames(mcmc[[1]]) %>% 
+                       { .[str_detect(., "^ID\\d*")] }
                      
-                   })
+                     df_p <- MCMCvis::MCMCsummary(mcmc) %>% 
+                       as_tibble(rownames = "parm") %>% 
+                       filter(str_detect(parm, "^ID*")) %>% 
+                       mutate(y = names(list_mcmc)[i],
+                              uid = parm) %>% 
+                       dplyr::select(uid,
+                                     pred = `50%`,
+                                     species = y) %>% 
+                       left_join(df_i,
+                                 by = c("uid", "species"))
+                     
+                     return(df_p)
+                   }
 
 # check convergence -------------------------------------------------------
 
 ## return max Rhat value for each species
 ## each element represents max Rhat for each species
-v_rhat <- sapply(list_est,
-                 function(data) max(data$Rhat))
+v_rhat <- df_est$Rhat
 
 ## print max Rhat across species
 print(max(v_rhat))
 
 # export ------------------------------------------------------------------
 
+list_mcmc <- lapply(list_mcmc, function(x) {
+  MCMCvis::MCMCchains(x) %>% 
+    { .[, !str_detect(colnames(.), "^ID.*")]}
+})
+
 ## results will not be exported unless converged
 if (max(v_rhat) < 1.1) {
   saveRDS(list_mcmc, file = "data_fmt/output_move_mcmc.rds")
-  saveRDS(list_est, file = "data_fmt/output_move.rds")
+  saveRDS(df_est, file = "data_fmt/output_move.rds")
+  saveRDS(df_pred, file = "data_fmt/output_move_pred.rds")
 }
-
-print(list_est)

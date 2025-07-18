@@ -8,9 +8,11 @@ model {
   }
   
   p ~ dnorm(0.5, pow(1, -2))T(0, 1)
-  nu ~ dexp(0.01)T(3, )
+  nu ~ dexp(0.1)T(3, )
   
   for (i in 1:Nsample) {
+    D[i] <- abs(X1[i] - X0[i]) / Intv[i]
+    
     ## observation model for recaptured or not
     z[i] <- step(430 - X1[i]) + step(X1[i])
     phi[i] <- step(z[i] - 1.5)
