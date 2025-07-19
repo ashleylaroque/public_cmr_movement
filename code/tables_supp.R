@@ -81,7 +81,7 @@ tab_den <- df_combined %>%
 
 ## export
 print(xtable(tab_den,
-             caption = "Mean and standard deviation density (n /m^2) of each target species.",
+             caption = "Mean and standard deviation of detection-corrected density (n /m^2^) of each target species.",
              label = "tab:density"),
       tabular.environment = "tabular", # use \begin{tabular}
       sanitize.text.function = function(x) x, # for math mode
