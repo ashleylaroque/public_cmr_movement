@@ -112,7 +112,7 @@ We used the dispersal-observation model to evaluate the effects of both intrinsi
 where $\sigma_i$ is the standard deviation describing the distance moved between consecutive capture and recapture occasions ($X_{1,i} - X_{0,i}$), and $\nu$ is the degree of freedom.
 We chose a Student-t distribution because movement data are often heavy-tailed \citep{clobertDispersalEcologyEvolution2012}.
 The degrees of freedom parameter, $\nu$, controls the extent of heavy-tailedness, with lower values indicating fatter tails. As $\nu$ approaches infinity, the Student-t distribution converges to a normal distribution.
-Using a Student-t distribution allows us to draw robust inferences about the ecological drivers of movement by properly accounting for outliers; i.e., the coefficient estimates remain relatively insensitive to them (see Equation \ref{eq:linear-pred}) \citep{}.
+Using a Student-t distribution allows us to draw robust inferences about the ecological drivers of movement by properly accounting for outliers; i.e., the coefficient estimates remain relatively insensitive to them (see Equation \ref{eq:linear-pred}) \citep{lunnBUGSBookPractical2012}.
 
 We linked the standard deviation of  movement distance to predictors using a log-link function: 
 
@@ -221,7 +221,7 @@ An approach combined with controlled experiments may help address this limitatio
 Second, we experienced relatively low consecutive recapture rates, likely because of the small spatial extent of our study area. Our dispersal-observation model accounted for emigration from the 430-m study reach, imperfect detection, and survival processes to minimize statistical biases arising from this limitation \citep{teruiModelingDispersalUsing2020}.
 As such, our statistical analysis should provide robust parameter estimates even under the limitations of our field research.
 Lastly, we observed ``outlier'' movers in the data (Figures \ref{fig:fig_size} and \ref{fig:fig_density}). 
-However, since our model employed a student-t distribution (see Equation \ref{eq:student-t}), our statistical inference is insensitive to these outlier values (i.e., conservative) (REF). 
+However, since our model employed a student-t distribution (see Equation \ref{eq:student-t}), our statistical inference is insensitive to these outlier values (i.e., conservative) \citep{lunnBUGSBookPractical2012}. 
 Nevertheless, it is important to recognize that long-distance movers can play critical roles in ecological processes \citep{clobertDispersalEcologyEvolution2012}.
 Future studies addressing this limitation would be particularly valuable in advancing movement research.
 
