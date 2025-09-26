@@ -63,15 +63,16 @@ print(xtable(tab_size,
 # Mean density of each tagged species  ------------------------------------
 
 tab_den <- df_combined %>% 
-  select(adj_density_bluehead_chub, 
+  dplyr::select(adj_density_bluehead_chub, 
          adj_density_creek_chub,
          adj_density_green_sunfish, 
          adj_density_redbreast_sunfish) %>% 
   pivot_longer(cols = starts_with("adj_"),
                names_to = "opponent", 
                values_to = "density") %>% 
+  drop_na(density) %>% ###### check this
   group_by(opponent) %>% 
-  summarize(Mean = mean(density),
+  reframe(Mean = mean(density),
             "Standard Deviation" = sd(density)) %>% 
   rename("Species" = "opponent") %>% 
   mutate(Species = case_when(Species == "adj_density_bluehead_chub" ~ "Bluehead chub",
@@ -81,7 +82,7 @@ tab_den <- df_combined %>%
 
 ## export
 print(xtable(tab_den,
-             caption = "Mean and standard deviation of detection-corrected density (n /m^2^) of each target species.",
+             caption = "Mean and standard deviation of detection-corrected density ($\\n/m^2$) of each target species.",
              label = "tab:density"),
       tabular.environment = "tabular", # use \begin{tabular}
       sanitize.text.function = function(x) x, # for math mode
@@ -112,6 +113,7 @@ print(xtable(tab_cap,
       sanitize.text.function = function(x) x, # for math mode
       include.rownames = FALSE,
       caption.placement = "top",
+      scalebox = 0.8, 
       file = "tex/table_capture.tex")
 
 
@@ -133,7 +135,8 @@ tab_coef <- df_est %>%
 print(xtable(tab_coef,
              caption = "Parameter estimates of the movement model. Median estimates and their associated posterior probabilities are reported.",
              label = "tab:coefficients"),
-      tabular.environment = "tabular", # use \begin{tabular}
+      tabular.environment = "longtable", # use \begin{tabular} or longtable
+      floating = F, 
       sanitize.text.function = function(x) x, # for math mode
       include.rownames = FALSE,
       caption.placement = "top",

@@ -72,11 +72,13 @@ plt_theme <- theme_bw() + theme(
   panel.grid.minor.y = element_blank(),
   
   strip.background = element_blank(),
-  strip.text.x = element_text(size = 16),
-  strip.text.y = element_text(size = 16),
-  axis.title = element_text(size = 16),
-  axis.text.x = element_text(size = 13),
-  axis.text.y = element_text(size = 13),
+  strip.text.x = element_text(size = 25),
+  strip.text.y = element_text(size = 25),
+  axis.title = element_text(size = 25),
+  axis.text.x = element_text(size = 20),
+  axis.text.y = element_text(size = 20),
+  legend.title = element_text(size = 20),
+  legend.text = element_text(size = 20),
   
   plot.margin = unit(c(1, 1, 1.5, 1.5), "cm")
 )
@@ -153,7 +155,7 @@ df_mcmc_plot <- df_mcmc %>%
   ungroup() 
 
 ## density ridge figure
-fig_est <- df_mcmc_plot %>% 
+(fig_est <- df_mcmc_plot %>% 
   ggplot(aes(x = value,
              y = var_label)) +
   geom_density_ridges(scale = 0.9, 
@@ -180,7 +182,7 @@ fig_est <- df_mcmc_plot %>%
         strip.text = element_text(margin = margin(b = 10))) +
   labs(fill = "Posterior prob.",
        x = "Estimate",
-       y = "Predictor")
+       y = "Predictor"))
 
 ## export
 ggsave(fig_est,

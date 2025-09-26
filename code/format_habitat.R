@@ -6,7 +6,7 @@
 # setup -------------------------------------------------------------------
 
 ## remove objects
-#rm(list = ls())
+rm(list = ls())
 
 source(here::here("code/library.R"))
 source(here::here("code/function.R"))
@@ -15,7 +15,7 @@ source(here::here("code/function.R"))
 
 ## download data for pit tags
 ## run only when data need to be updated
-# drive_download("data_habitat_v1_1_2",
+# drive_download("data_habitat_v1_1_3",
 #                type = "csv",
 #                path = "data_raw/data_habitat.csv",
 #                overwrite = T)
@@ -63,7 +63,7 @@ df_sec <- df_tr %>%
                               run_length)) %>% # sum pool, riffle, run length for each row
   ungroup() %>%
   group_by(occasion, section) %>% # mean or remove NAs by occasion and section
-  summarize(width = mean(width),
+  reframe(width = mean(width),
             section_length = na.omit(section_length),
             depth_mean = mean(depth),
             velocity_mean = mean(velocity),
@@ -93,7 +93,7 @@ df_ucb <- df_habitat %>%
            section,
            ucb_id,
            dimension) %>%
-  summarize(value = mean(value)) %>% # take means for each ucb
+  reframe(value = mean(value)) %>% # take means for each ucb
   pivot_wider(values_from = value,
               names_from = dimension) %>% # lateral extension
   ungroup() %>% 
@@ -103,7 +103,7 @@ df_ucb <- df_habitat %>%
 df_ucb_sec <- df_ucb %>%
   mutate(area = depth * length) %>% # add ucb area column 
   group_by(occasion, section) %>%
-  summarize(area_ucb = sum(area)) %>%  # sum by section returning only 1 row 
+  reframe(area_ucb = sum(area)) %>%  # sum by section returning only 1 row 
   ungroup()
 
 ## merge data
