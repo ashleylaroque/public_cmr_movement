@@ -13,9 +13,9 @@ source(here::here("code/function.R"))
 
 # Read Habitat Data-----------------------------------------------------------------
 
-## download data for pit tags
-## run only when data need to be updated
-# drive_download("data_habitat_v1_1_3",
+# ## download data for pit tags
+# ## run only when data need to be updated
+# drive_download("data_habitat_v1_1_4",
 #                type = "csv",
 #                path = "data_raw/data_habitat.csv",
 #                overwrite = T)
@@ -64,14 +64,14 @@ df_sec <- df_tr %>%
   ungroup() %>%
   group_by(occasion, section) %>% # mean or remove NAs by occasion and section
   reframe(width = mean(width),
-            section_length = na.omit(section_length),
-            depth_mean = mean(depth),
-            velocity_mean = mean(velocity),
-            substrate_mean = mean(substrate),
-            area = width * section_length,
-            area_pool = width * na.omit(pool_length),  
-            area_run = width * na.omit(run_length),
-            area_riffle = width * na.omit(riffle_length)) %>%
+          section_length = na.omit(section_length),
+          depth_mean = mean(depth),
+          velocity_mean = mean(velocity),
+          substrate_mean = mean(substrate),
+          area = width * section_length,
+          area_pool = width * na.omit(pool_length),  
+          area_run = width * na.omit(run_length),
+          area_riffle = width * na.omit(riffle_length)) %>%
   ungroup()
 
 ## undercut bank
@@ -115,3 +115,4 @@ df_h_sec <- df_sec %>% #has depth, substrate, velocity info
 
 ## export
 saveRDS(df_h_sec, "data_fmt/data_habitat.rds")
+
