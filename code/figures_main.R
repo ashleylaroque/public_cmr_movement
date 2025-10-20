@@ -174,7 +174,7 @@ df_mcmc_plot <- df_mcmc %>%
              linetype = "dashed",
              alpha = 0.5) +
   scale_fill_gradient(low = "white",
-                      high = "salmon") +
+                      high = "#CC4678FF") +
   facet_wrap(~ sp_label,
              scales = "free") +
   theme_ridges() +

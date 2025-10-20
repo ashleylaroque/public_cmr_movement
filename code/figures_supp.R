@@ -40,37 +40,52 @@ plt_theme <- theme_bw() + theme(
   panel.grid.minor.y = element_blank(),
   
   strip.background = element_blank(),
-  strip.text.x = element_text(size = 15),
-  strip.text.y = element_text(size = 15),
-  axis.title = element_text(size = 15))
+  strip.text.x = element_text(size = 25),
+  strip.text.y = element_text(size = 25),
+  axis.title = element_text(size = 25),
+  axis.text.x = element_text(size = 20),
+  axis.text.y = element_text(size = 20),
+  legend.title = element_text(size = 20),
+  legend.text = element_text(size = 20))
 
 theme_set(plt_theme)
 
+species.labs <- c("Bluehead Chub", "Creek Chub", "Green Sunfish", "Redbreast Sunfish")
+names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbreast_sunfish")
+
 # Histogram of recaps by species ------------------------------------------
 
-df_cmr %>% 
+(fig_recap <- df_cmr %>% 
   filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
   mutate(Recap = ifelse(recap == "n", "No", "Yes")) %>% 
-  ggplot(aes(x= recap, fill = Recap)) +
+  ggplot(aes(x = recap, fill = Recap)) +
   scale_fill_manual(values = alpha(c("gray", "steelblue3"))) +
   geom_bar() +
-  theme_minimal() +
-  facet_wrap(~species) +
-  theme_set(plt_theme)
+  stat_count(geom = "text", aes(label = after_stat(count)), 
+             vjust = -0.5,
+             size = 7) +
+  facet_wrap(~species,
+             labeller = as_labeller(species.labs)) +
+   ylim(0, 1300) +
+   labs(x = "Recapture", y = "Count"))
+
+ggsave(fig_recap, 
+       filename = "output/fig_recap.pdf",
+       height = 10,
+       width = 12)
 
 
 # Abundance of all captured species ---------------------------------------
 
-fig_abundance <- df_n %>%
+(fig_abundance <- df_n %>%
   group_by(species) %>%
   tally(n) %>%
   ungroup() %>%
   ggplot(aes(reorder(species, -n), n)) +
-  geom_col() +
-  theme_set(plt_theme) +
-  theme(axis.text.x = element_text(size = 12, angle = 45, vjust = .5)) +
+  geom_col(fill = "darkcyan") +
+   theme(axis.text.x = element_text( angle = 45, hjust = 1)) +
   xlab("Species") +
-  ylab("Abundance")
+  ylab("Abundance"))
 
 ggsave(fig_abundance, 
        filename = "output/fig_abundance.pdf",
@@ -88,14 +103,12 @@ ggsave(fig_abundance,
 
 # Boxplot of mean body size -----------------------------------------------
 
-fig_size_dist <- ggplot(df_combined, aes(species, length0, fill = species)) +
+(fig_size_dist <- ggplot(df_combined, aes(species, length0, fill = species)) +
   geom_boxplot() +
   scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"))+
-  theme_set(plt_theme) +
-  theme(legend.position = "none",
-        axis.text.x = element_text(size = 12)) +
+  theme(legend.position = "none") +
   xlab("Species") +
-  ylab("Length (mm)")
+  ylab("Length (mm)"))
 
 ggsave(fig_size_dist, 
        filename = "output/fig_size_dist.pdf",
@@ -103,32 +116,35 @@ ggsave(fig_size_dist,
        width = 12)
 
 # Histogram of total movement  ----------------------------------------
-species.labs <- c("Bluehead Chub", "Creek Chub", "Green Sunfish", "Redbreast Sunfish")
-names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbreast_sunfish")
 
 # visualize movement across all occasions
-# gghistogram(df_combined, x= "abs_move", fill = "#20A387FF",
-#                             xlab = "Distance (m)", ylab = "Frequency", binwidth = 10) +
-#   #geom_vline(xintercept = 0, linetype="dashed", color = "red", size=0.9) +
-#   facet_wrap2(species ~ ., 
-#               scales = "free",
-#               labeller = as_labeller(species.labs))+
-#   theme(axis.text.x = element_text(angle = 45, vjust = .5)) 
 
+(fig_move <- ggplot(df_combined) +
+  geom_histogram(aes(x = move), fill = "darkcyan") +
+  geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
+  facet_wrap( ~ species,
+              scales = "free",
+              labeller = as_labeller(species.labs))+
+   scale_y_continuous(breaks = pretty_breaks())+
+  theme(axis.text.x = element_text(angle = 45, vjust = .5),
+        legend.position = "none") +
+  labs(x = "Distance (m)", y = "Count"))
 
+ggsave(fig_move, 
+       filename = "output/fig_move.pdf",
+       height = 9,
+       width = 12)
 
 # Histogram of total movement across seasons ------------------------------
 
 # movement between seasons
 season.labs <- c("0" = "Winter", "1" = "Summer")
-fig_total_move <- gghistogram(df_combined, x= "abs_move", fill = "#20A387FF",
-            xlab = "Distance (m)", ylab = "Frequency", binwidth = 10) +
+(fig_total_move <- ggplot(df_combined) +
+    geom_histogram(aes(x = abs_move), fill = "darkcyan") +
   facet_grid(season ~ species, 
               scales = "free",
               labeller = labeller(species = species.labs, season = season.labs)) +
-  theme_set(plt_theme) +
-  theme(axis.text.x = element_text(size = 12),
-        axis.text.y = element_text(size = 12))
+    labs(x = "Distance (m)", y = "Frequency"))
 
 ggsave(fig_total_move, 
        filename = "output/fig_total_move.pdf",
@@ -137,10 +153,10 @@ ggsave(fig_total_move,
 
 # Correlations of habitat -----------------------------------------------------------------
 
-# chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean", 
-#                                          "area", "area_ucb", "mean_temp")], 
-#                          method="spearman", 
-#                          histogram=TRUE, 
+# chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean",
+#                                          "area", "area_ucb", "mean_temp")],
+#                          method="spearman",
+#                          histogram=TRUE,
 #                          cex = 10)
 
 # PCA Habitat -------------------------------------------------------------
