@@ -7,6 +7,7 @@ rm(list = ls())
 source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
+source(here::here("code/format_water_level.R"))
 
 df_est <- readRDS("data_fmt/output_move.rds") %>% 
   filter(species %in% c("bluehead_chub",
@@ -42,23 +43,23 @@ df_combined <- readRDS("data_fmt/data_combined.rds") %>%
 
 # Mean size of each tagged species (including replicates) -----------------
 
-tab_size <- df_combined %>% 
-  group_by(species) %>% 
-  summarize(Mean = mean(length0),
-            "Standard Deviation" = sd(length0)) %>% 
-  rename("Species" = "species") %>% 
-  mutate(Species = str_to_sentence(Species) %>% 
-           str_replace("_", " ")) 
-
-## export
-print(xtable(tab_size,
-             caption = "Mean and standard deviation total length (mm) for each target species.",
-             label = "tab:size"),
-      tabular.environment = "tabular", # use \begin{tabular}
-      sanitize.text.function = function(x) x, # for math mode
-      include.rownames = FALSE,
-      caption.placement = "top",
-      file = "tex/table_size.tex")
+# tab_size <- df_combined %>% 
+#   group_by(species) %>% 
+#   summarize(Mean = mean(length0),
+#             "Standard Deviation" = sd(length0)) %>% 
+#   rename("Species" = "species") %>% 
+#   mutate(Species = str_to_sentence(Species) %>% 
+#            str_replace("_", " ")) 
+# 
+# ## export
+# print(xtable(tab_size,
+#              caption = "Mean and standard deviation total length (mm) for each target species.",
+#              label = "tab:size"),
+#       tabular.environment = "tabular", # use \begin{tabular}
+#       sanitize.text.function = function(x) x, # for math mode
+#       include.rownames = FALSE,
+#       caption.placement = "top",
+#       file = "tex/table_size.tex")
 
 # Mean density of each tagged species  ------------------------------------
 
@@ -144,14 +145,20 @@ print(xtable(tab_coef,
 
 
 # Table of Habitat Variables -----------------------------------------------
+df_water <- df_daily %>% 
+  reframe(Mean = mean(daily_water_temp),
+          "Standard Deviation" = sd(daily_water_temp),
+          "habitat_variable" = "temp") 
 
 tab_hab <- df_h_sec %>% 
   pivot_longer(cols = -c(occasion, section),
                names_to = "habitat_variable",
                values_to = "value") %>% 
   group_by(habitat_variable) %>% 
-  summarise(Mean = mean(value),
+  reframe(Mean = mean(value),
             "Standard Deviation" = sd(value)) %>% 
+  ungroup() %>% 
+  rbind(df_water) %>% 
   mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area (m$^2$)",
                                       habitat_variable == "width" ~ "Mean Width (m)",
                                       habitat_variable == "section_length" ~ "Section Length (m)",
@@ -161,7 +168,8 @@ tab_hab <- df_h_sec %>%
                                       habitat_variable == "area_ucb" ~ "Habitat Refuge Area (m$^2$)",
                                       habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
                                       habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
-                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
+                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)",
+                                      habitat_variable == "temp" ~ "Mean Temperature (C)")) %>% 
   rename("Habitat Metric" = "habitat_variable") 
 
 

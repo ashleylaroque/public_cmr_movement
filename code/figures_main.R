@@ -304,7 +304,7 @@ df_size <- df_pred %>%
                  alpha = prob_level,
                  fill = species),
              color = NA) +
-   scale_alpha_manual(values = c("high" = .5,
+   scale_alpha_manual(values = c("high" = .35,
                                  "low" = 0)) +
    scale_fill_manual(values=c("darkcyan",
                               "maroon",
@@ -364,7 +364,7 @@ ggsave(fig_size,
                               "maroon",
                               "mediumpurple1",
                               "steelblue3")) +
-   scale_alpha_manual(values = c("high" = .5,
+   scale_alpha_manual(values = c("high" = .35,
                                  "low" = 0)) +
    facet_grid2(rows = vars(species),
                cols = vars(opponent),
@@ -399,7 +399,7 @@ grid.draw(fig_density)
 
 ggsave(fig_density,
        filename = "output/fig_density.pdf",
-       height = 12,
-       width = 13)
+       height = 15,
+       width = 15)
 
 

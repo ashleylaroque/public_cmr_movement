@@ -77,15 +77,19 @@ ggsave(fig_recap,
 
 # Abundance of all captured species ---------------------------------------
 
-(fig_abundance <- df_n %>%
+df_pro_abund <- df_n %>%
   group_by(species) %>%
-  tally(n) %>%
-  ungroup() %>%
-  ggplot(aes(reorder(species, -n), n)) +
-  geom_col(fill = "darkcyan") +
-   theme(axis.text.x = element_text( angle = 45, hjust = 1)) +
-  xlab("Species") +
-  ylab("Abundance"))
+  reframe(abund = sum(n)) %>% 
+  ungroup() %>%  
+  mutate(total = sum(abund),
+         proportion = abund/total) 
+
+(fig_abundance <- df_pro_abund %>% 
+    ggplot(aes(reorder(species, -proportion), proportion)) +
+    geom_col(fill = "darkcyan") +
+    theme(axis.text.x = element_text( angle = 45, hjust = 1)) +
+    xlab("Species") +
+    ylab("Proportional Abundance"))
 
 ggsave(fig_abundance, 
        filename = "output/fig_abundance.pdf",
@@ -149,7 +153,7 @@ season.labs <- c("0" = "Winter", "1" = "Summer")
 ggsave(fig_total_move, 
        filename = "output/fig_total_move.pdf",
        height = 10,
-       width = 12)
+       width = 14)
 
 # Correlations of habitat -----------------------------------------------------------------
 
