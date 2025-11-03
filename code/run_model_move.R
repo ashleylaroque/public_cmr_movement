@@ -33,7 +33,8 @@ df_move <- df_move0 %>% # movement dataframe
   left_join(df_hobo, # add water temp
             by = c("occasion0" = "occasion")) %>% 
   mutate(intv = as.numeric(datetime1 - datetime0),
-         y = ifelse(is.na(section1), 0, 1)) %>% 
+         y = ifelse(is.na(section1), 0, 1),
+         julian = yday(datetime0)) %>%
   group_by(occasion0) %>% 
   mutate(intv = ifelse(is.na(intv),
                        median(intv, na.rm = TRUE),
@@ -77,7 +78,8 @@ list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
     mutate(log_length = log(length0),
-           area_ucb = sqrt(area_ucb))
+           area_ucb = sqrt(area_ucb),
+           julian = julian^2)
   
   ## data for jags
   list_jags <- with(df_i,

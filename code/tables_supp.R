@@ -43,13 +43,13 @@ df_combined <- readRDS("data_fmt/data_combined.rds") %>%
 
 # Mean size of each tagged species (including replicates) -----------------
 
-# tab_size <- df_combined %>% 
-#   group_by(species) %>% 
+# tab_size <- df_combined %>%
+#   group_by(species) %>%
 #   summarize(Mean = mean(length0),
-#             "Standard Deviation" = sd(length0)) %>% 
-#   rename("Species" = "species") %>% 
-#   mutate(Species = str_to_sentence(Species) %>% 
-#            str_replace("_", " ")) 
+#             "Standard Deviation" = sd(length0)) %>%
+#   rename("Species" = "species") %>%
+#   mutate(Species = str_to_sentence(Species) %>%
+#            str_replace("_", " "))
 # 
 # ## export
 # print(xtable(tab_size,
@@ -63,33 +63,33 @@ df_combined <- readRDS("data_fmt/data_combined.rds") %>%
 
 # Mean density of each tagged species  ------------------------------------
 
-tab_den <- df_combined %>% 
-  dplyr::select(adj_density_bluehead_chub, 
-         adj_density_creek_chub,
-         adj_density_green_sunfish, 
-         adj_density_redbreast_sunfish) %>% 
-  pivot_longer(cols = starts_with("adj_"),
-               names_to = "opponent", 
-               values_to = "density") %>% 
-  drop_na(density) %>% ###### check this
-  group_by(opponent) %>% 
-  reframe(Mean = mean(density),
-            "Standard Deviation" = sd(density)) %>% 
-  rename("Species" = "opponent") %>% 
-  mutate(Species = case_when(Species == "adj_density_bluehead_chub" ~ "Bluehead chub",
-                             Species == "adj_density_creek_chub" ~ "Creek chub",
-                             Species == "adj_density_green_sunfish" ~ "Green sunfish",
-                             Species == "adj_density_redbreast_sunfish" ~ "Redbreast sunfish"))
-
-## export
-print(xtable(tab_den,
-             caption = "Mean and standard deviation of detection-corrected density ($\\n/m^2$) of each target species.",
-             label = "tab:density"),
-      tabular.environment = "tabular", # use \begin{tabular}
-      sanitize.text.function = function(x) x, # for math mode
-      include.rownames = FALSE,
-      caption.placement = "top",
-      file = "tex/table_density.tex")
+# tab_den <- df_combined %>%
+#   dplyr::select(adj_density_bluehead_chub,
+#          adj_density_creek_chub,
+#          adj_density_green_sunfish,
+#          adj_density_redbreast_sunfish) %>%
+#   pivot_longer(cols = starts_with("adj_"),
+#                names_to = "opponent",
+#                values_to = "density") %>%
+#   drop_na(density) %>% ###### check this
+#   group_by(opponent) %>%
+#   reframe(Mean = mean(density),
+#             "Standard Deviation" = sd(density)) %>%
+#   rename("Species" = "opponent") %>%
+#   mutate(Species = case_when(Species == "adj_density_bluehead_chub" ~ "Bluehead chub",
+#                              Species == "adj_density_creek_chub" ~ "Creek chub",
+#                              Species == "adj_density_green_sunfish" ~ "Green sunfish",
+#                              Species == "adj_density_redbreast_sunfish" ~ "Redbreast sunfish"))
+# 
+# ## export
+# print(xtable(tab_den,
+#              caption = "Mean and standard deviation of detection-corrected density ($\\n/m^2$) of each target species.",
+#              label = "tab:density"),
+#       tabular.environment = "tabular", # use \begin{tabular}
+#       sanitize.text.function = function(x) x, # for math mode
+#       include.rownames = FALSE,
+#       caption.placement = "top",
+#       file = "tex/table_density.tex")
 
 
 

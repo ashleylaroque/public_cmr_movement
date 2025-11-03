@@ -129,22 +129,25 @@ ggplot(df_hourly, aes(x = dt, y = water_temp)) +
   scale_y_continuous("Water temperature") +
   ggtitle("Hourly temperature (c)") +
   theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.background = element_rect(fill = "white"), 
-        legend.position = c(0.10, 0.80))  # remove grid
+        legend.position = c(0.10, 0.80)) + # remove grid
+  xlab("Date")
 
 ## Water level
 ggplot(df_hourly, aes(x = dt, y = water_pres)) + 
   geom_line(size = 0.8, color = "blue") +
   scale_x_datetime(date_breaks = "60 day", labels = date_format("%m-%d-%y")) +
-  scale_y_continuous("Water temperature") +
+  scale_y_continuous("Water pressure") +
   ggtitle("Hourly water level (m)") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.background = element_rect(fill = "white"), 
-        legend.position = c(0.10, 0.80))
+        legend.position = c(0.10, 0.80)) +
+  xlab("Date")
 
 # Daily mean plot
 
@@ -158,17 +161,19 @@ ggplot(df_daily, aes(x = date, y = daily_water_temp)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.background = element_rect(fill = "white"), 
-        legend.position = c(0.10, 0.80))
+        legend.position = c(0.10, 0.80)) +
+  xlab("Date")
 
 ## Water level
 ggplot(df_daily, aes(x = date, y = daily_water_pres)) + 
   geom_line(size = 0.8, color = "blue") +
   scale_x_date(date_breaks = "60 day", labels = date_format("%m-%d-%y")) +
-  scale_y_continuous("Water temperature") +
+  scale_y_continuous("Water pressure") +
   ggtitle("Mean daily water level (m)") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.background = element_rect(fill = "white"), 
-        legend.position = c(0.10, 0.80))
+        legend.position = c(0.10, 0.80)) +
+  xlab("Date")
 

@@ -59,7 +59,7 @@ names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbre
   filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
   mutate(Recap = ifelse(recap == "n", "No", "Yes")) %>% 
   ggplot(aes(x = recap, fill = Recap)) +
-  scale_fill_manual(values = alpha(c("gray", "steelblue3"))) +
+  scale_fill_manual(values = alpha(c("gray", "#CC4678FF"))) +
   geom_bar() +
   stat_count(geom = "text", aes(label = after_stat(count)), 
              vjust = -0.5,
@@ -82,78 +82,93 @@ df_pro_abund <- df_n %>%
   reframe(abund = sum(n)) %>% 
   ungroup() %>%  
   mutate(total = sum(abund),
-         proportion = abund/total) 
+         proportion = abund/total, 
+         percent = round(((abund/total) * 100), digits = 1),
+         sd = sd(proportion)) 
 
 (fig_abundance <- df_pro_abund %>% 
-    ggplot(aes(reorder(species, -proportion), proportion)) +
-    geom_col(fill = "darkcyan") +
-    theme(axis.text.x = element_text( angle = 45, hjust = 1)) +
+    ggplot(aes(reorder(species, -percent), percent)) +
+    geom_col(fill = "#CC4678FF") +
+    geom_text(aes(label = percent), 
+              color = "black", 
+              vjust = -1,
+              size = 5) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     xlab("Species") +
-    ylab("Proportional Abundance"))
+    ylab("Percent Abundance"))
 
 ggsave(fig_abundance, 
        filename = "output/fig_abundance.pdf",
        height = 10,
        width = 12)
 
-# df_abund <- df_n %>% 
-#   group_by(species) %>% 
-#   tally(n) %>% 
-#   mutate(total = sum(n),
-#          percent = n / total) %>% 
-#   filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
-#   mutate(top4 = sum(n))
 
+# Boxplot of body size -----------------------------------------------
 
-# Boxplot of mean body size -----------------------------------------------
-
-(fig_size_dist <- ggplot(df_combined, aes(species, length0, fill = species)) +
-  geom_boxplot() +
-  scale_fill_manual(values=c("darkcyan", "maroon", "mediumpurple1", "steelblue3"))+
-  theme(legend.position = "none") +
-  xlab("Species") +
-  ylab("Length (mm)"))
-
-ggsave(fig_size_dist, 
-       filename = "output/fig_size_dist.pdf",
-       height = 10,
-       width = 12)
+# (fig_size_dist <- ggplot(df_combined, aes(species, length0, fill = species)) +
+#   geom_boxplot() +
+#   scale_fill_manual(values=c("steelblue3", "mediumpurple1", "darkcyan", "maroon"))+
+#   scale_y_continuous(breaks = pretty_breaks()) +
+#   theme(legend.position = "none") +
+#   xlab("Species") +
+#   ylab("Length (mm)"))
+# 
+# ggsave(fig_size_dist, 
+#        filename = "output/fig_size_dist.pdf",
+#        height = 10,
+#        width = 12)
 
 # Histogram of total movement  ----------------------------------------
 
 # visualize movement across all occasions
 
-(fig_move <- ggplot(df_combined) +
-  geom_histogram(aes(x = move), fill = "darkcyan") +
-  geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
-  facet_wrap( ~ species,
-              scales = "free",
-              labeller = as_labeller(species.labs))+
-   scale_y_continuous(breaks = pretty_breaks())+
-  theme(axis.text.x = element_text(angle = 45, vjust = .5),
-        legend.position = "none") +
-  labs(x = "Distance (m)", y = "Count"))
-
-ggsave(fig_move, 
-       filename = "output/fig_move.pdf",
-       height = 9,
-       width = 12)
+# (fig_move <- ggplot(df_combined) +
+#   geom_histogram(aes(x = move), fill = "darkcyan") +
+#   geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
+#   facet_wrap( ~ species,
+#               scales = "free",
+#               labeller = as_labeller(species.labs))+
+#    scale_y_continuous(breaks = pretty_breaks())+
+#   theme(axis.text.x = element_text(angle = 45, vjust = .5),
+#         legend.position = "none") +
+#   labs(x = "Distance (m)", y = "Count"))
+# 
+# ggsave(fig_move, 
+#        filename = "output/fig_move.pdf",
+#        height = 9,
+#        width = 12)
 
 # Histogram of total movement across seasons ------------------------------
 
 # movement between seasons
 season.labs <- c("0" = "Winter", "1" = "Summer")
 (fig_total_move <- ggplot(df_combined) +
-    geom_histogram(aes(x = abs_move), fill = "darkcyan") +
+    geom_histogram(aes(x = move), fill = "darkcyan") +
+    geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
   facet_grid(season ~ species, 
               scales = "free",
               labeller = labeller(species = species.labs, season = season.labs)) +
-    labs(x = "Distance (m)", y = "Frequency"))
+    scale_y_continuous(breaks = pretty_breaks()) +
+    theme(axis.text.x = element_text(angle = 45, vjust = .5),
+          legend.position = "none") +
+    labs(x = "Distance (m)", y = "Count"))
 
 ggsave(fig_total_move, 
        filename = "output/fig_total_move.pdf",
        height = 10,
        width = 14)
+
+
+# Correlation of body size and density ------------------------------------
+
+# chart.Correlation(df_combined[, c("length0", 
+#                                   "w_density_bluehead_chub", 
+#                                   "w_density_creek_chub",
+#                                   "w_density_green_sunfish",
+#                                   "w_density_redbreast_sunfish")],
+#                          method = "spearman",
+#                          histogram = TRUE,
+#                          cex = 10)
 
 # Correlations of habitat -----------------------------------------------------------------
 

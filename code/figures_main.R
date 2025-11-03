@@ -105,10 +105,10 @@ names(opp.labs) <- c("w_density_bluehead_chub",
                      "w_density_green_sunfish",
                      "w_density_redbreast_sunfish")
 
-strip1 <- strip_themed(background_x = elem_list_rect(fill = c("darkcyan",
-                                                              "maroon",
-                                                              "mediumpurple1",
-                                                              "steelblue3")))
+strip1 <- strip_themed(background_x = elem_list_rect(fill = c("steelblue3", 
+                                                              "mediumpurple1", 
+                                                              "darkcyan",
+                                                              "maroon")))
 
 # Model estimate ----------------------------------------------------------
 
@@ -285,10 +285,10 @@ df_size <- df_pred %>%
               y = abs_move,
               color = species)) +
     geom_point(size = 1) + ## add points
-    scale_color_manual(values=c("darkcyan",
-                               "maroon",
-                               "mediumpurple1",
-                               "steelblue3"),
+    scale_color_manual(values=c("steelblue3", 
+                                "mediumpurple1", 
+                                "darkcyan",
+                                "maroon"),
                       name="Species") +
    geom_area(data = df_fig %>% ## draw shaded area
                filter(focus == "log_length"),
@@ -306,10 +306,10 @@ df_size <- df_pred %>%
              color = NA) +
    scale_alpha_manual(values = c("high" = .35,
                                  "low" = 0)) +
-   scale_fill_manual(values=c("darkcyan",
-                              "maroon",
-                              "mediumpurple1",
-                              "steelblue3")) +
+   scale_fill_manual(values=c("steelblue3", 
+                              "mediumpurple1", 
+                              "darkcyan",
+                              "maroon")) +
    scale_x_continuous(labels = label_number(accuracy = 0.2)) +
    facet_wrap2(~ species,
                scales = "free",
@@ -360,10 +360,10 @@ ggsave(fig_size,
                  alpha = prob_level,
                  fill = species),
              color = NA) +
-   scale_fill_manual(values=c("darkcyan",
-                              "maroon",
-                              "mediumpurple1",
-                              "steelblue3")) +
+   scale_fill_manual(values=c("steelblue3", 
+                              "mediumpurple1", 
+                              "darkcyan",
+                              "maroon")) +
    scale_alpha_manual(values = c("high" = .35,
                                  "low" = 0)) +
    facet_grid2(rows = vars(species),
@@ -373,10 +373,10 @@ ggsave(fig_size,
                switch = "x",  # use switch = "y" to swap strip to the left side
                labeller = labeller(species = species.labs,
                                   opponent = opp.labs)) +
-   scale_color_manual(values = c("darkcyan",
-                                 "maroon",
-                                 "mediumpurple1",
-                                 "steelblue3"), 
+   scale_color_manual(values = c("steelblue3", 
+                                 "mediumpurple1", 
+                                 "darkcyan",
+                                 "maroon"), 
                       name = "species") +
    labs(x= expression("Density (n /"~m^2*")"),
         y= "Absolote movement (m / day)") +
@@ -388,7 +388,14 @@ ggsave(fig_size,
 
 fig_density <- ggplot_gtable(ggplot_build(fig_den))
 strip_both <- which(grepl('strip-', fig_density$layout$name))
-fills <- c("darkcyan", "maroon", "mediumpurple1", "steelblue3", "darkcyan", "maroon", "mediumpurple1", "steelblue3")
+fills <- c("steelblue3", 
+           "mediumpurple1", 
+           "darkcyan",
+           "maroon",
+           "steelblue3", 
+           "mediumpurple1", 
+           "darkcyan",
+           "maroon")
 k <- 1
 for (i in strip_both) {
   j <- which(grepl('rect', fig_density$grobs[[i]]$grobs[[1]]$childrenOrder))

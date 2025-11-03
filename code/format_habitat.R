@@ -115,3 +115,10 @@ df_h_sec <- df_sec %>% #has depth, substrate, velocity info
 
 ## export
 saveRDS(df_h_sec, "data_fmt/data_habitat.rds")
+
+
+h <- df_h_sec %>% 
+  group_by(section) %>% 
+  reframe(p = mean(area_pool),
+          r = mean(area_riffle),
+          run = mean(area_run))
