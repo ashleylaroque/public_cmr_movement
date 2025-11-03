@@ -78,8 +78,7 @@ list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
     mutate(log_length = log(length0),
-           area_ucb = sqrt(area_ucb),
-           julian = julian^2)
+           area_ucb = sqrt(area_ucb))
   
   ## data for jags
   list_jags <- with(df_i,
@@ -95,14 +94,14 @@ list_mcmc <- foreach(x = usp) %do% {
     dplyr::select(log_length, # log-trans total length of individual
                   area_ucb,
                   velocity_mean,
-                  mean_temp,
                   w_density_bluehead_chub, # seasonally adjusted density
                   w_density_creek_chub,
                   w_density_green_sunfish,
-                  w_density_redbreast_sunfish
-    ) %>%
+                  w_density_redbreast_sunfish,
+                  julian) %>% 
     mutate(across(.cols = everything(),
                   .fns = function(x) c(scale(x)))) %>%
+    mutate(julian_sq = julian^2) %>% 
     model.matrix(~., data = .)
   
   list_jags$X <- X
