@@ -68,7 +68,7 @@ usp <- c("green_sunfish",
 
 ## mcmc setup ####
 n_ad <- 1000
-n_iter <- 30000
+n_iter <- 35000
 n_thin <- max(3, ceiling(n_iter / 1000))
 n_burn <- ceiling(max(10, n_iter / 2))
 n_sample <- ceiling(n_iter / n_thin)
@@ -78,8 +78,7 @@ list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
     mutate(log_length = log(length0),
-           area_ucb = sqrt(area_ucb),
-           julian = julian^2)
+           area_ucb = sqrt(area_ucb))
   
   ## data for jags
   list_jags <- with(df_i,
@@ -95,7 +94,8 @@ list_mcmc <- foreach(x = usp) %do% {
     dplyr::select(log_length, # log-trans total length of individual
                   area_ucb,
                   velocity_mean,
-                  mean_temp,
+                  #mean_temp,
+                  julian,
                   w_density_bluehead_chub, # seasonally adjusted density
                   w_density_creek_chub,
                   w_density_green_sunfish,
@@ -103,6 +103,7 @@ list_mcmc <- foreach(x = usp) %do% {
     ) %>%
     mutate(across(.cols = everything(),
                   .fns = function(x) c(scale(x)))) %>%
+    mutate(julian_sq = julian^2) %>% 
     model.matrix(~., data = .)
   
   list_jags$X <- X
@@ -227,8 +228,9 @@ list_mcmc <- lapply(list_mcmc, function(x) {
     { .[, !str_detect(colnames(.), "^ID.*")]}
 })
 
-## results will not be exported unless converged
+## results will not be exported unless converged (check date modified in files)
 if (max(v_rhat) < 1.1) {
+  message("Model converged, files updated")
   saveRDS(list_mcmc, file = "data_fmt/output_move_mcmc.rds")
   saveRDS(df_est, file = "data_fmt/output_move.rds")
   saveRDS(df_pred, file = "data_fmt/output_move_pred.rds")
