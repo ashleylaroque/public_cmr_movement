@@ -128,7 +128,8 @@ f_label <- function(x) {
 df_mcmc_plot <- df_mcmc %>% 
   filter(!(parm %in% c("p",
                        "nu",
-                       "mean_temp",
+                       #"mean_temp",
+                       "julian",
                        "velocity_mean",
                        "area_ucb",
                        "(Intercept)")),
@@ -209,10 +210,10 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
            parm %in% c("(Intercept)", x_name)) %>% 
     pull(median)
   
-  nu <- df_output %>% 
-    filter(species == k,
-           parm == "nu") %>% 
-    pull(median)
+  # nu <- df_output %>% 
+  #   filter(species == k,
+  #          parm == "nu") %>% 
+  #   pull(median)
   
   df_x <- foreach(v = x_name,
                   .combine = bind_rows) %do% {
@@ -239,10 +240,10 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                               species = rep(unique(species))) %>% 
                       mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
                              y50 = qt_custum(p = 0.75, # (0.75 - 0.5) * 2 = 0.50
-                                             df = nu,
+                                             df = 4, #nu
                                              sigma = exp(log_sigma)),
                              y90 = qt_custum(p = 0.95, # (0.95 - 0.5) * 2 = 0.90
-                                             df = nu,
+                                             df = 4, #nu
                                              sigma = exp(log_sigma)),
                              focus = v)
                     

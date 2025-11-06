@@ -8,7 +8,8 @@ model {
   }
   
   p ~ dnorm(0.5, pow(1, -2))T(0, 1)
-  nu ~ dexp(0.1)T(3, )
+  nu <- 4 # supplied degrees of freedom
+  #~ dexp(0.1)T(3, ) only needed to estimate degrees of freedom
   
   for (i in 1:Nsample) {
     D[i] <- abs(X1[i] - X0[i]) / Intv[i]

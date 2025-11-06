@@ -55,7 +55,7 @@ df_move <- df_move0 %>% # movement dataframe
            str_pad(width = 4, pad = "0") %>% 
            paste0("ID", .))
 
-saveRDS(df_move, file = "data_fmt/data_combined.rds")
+#saveRDS(df_move, file = "data_fmt/data_combined.rds")
 
 
 # run jags ----------------------------------------------------------------
@@ -68,7 +68,7 @@ usp <- c("green_sunfish",
 
 ## mcmc setup ####
 n_ad <- 1000
-n_iter <- 35000
+n_iter <- 40000
 n_thin <- max(3, ceiling(n_iter / 1000))
 n_burn <- ceiling(max(10, n_iter / 2))
 n_sample <- ceiling(n_iter / n_thin)
@@ -94,7 +94,7 @@ list_mcmc <- foreach(x = usp) %do% {
     dplyr::select(log_length, # log-trans total length of individual
                   area_ucb,
                   velocity_mean,
-                  #mean_temp,
+                  #mean_temp, doesn't capture true seasonality (fall = spring temp)
                   julian,
                   w_density_bluehead_chub, # seasonally adjusted density
                   w_density_creek_chub,
@@ -103,7 +103,7 @@ list_mcmc <- foreach(x = usp) %do% {
     ) %>%
     mutate(across(.cols = everything(),
                   .fns = function(x) c(scale(x)))) %>%
-    mutate(julian_sq = julian^2) %>% 
+    #mutate(julian_sq = julian^2) %>% 
     model.matrix(~., data = .)
   
   list_jags$X <- X
@@ -117,14 +117,16 @@ list_mcmc <- foreach(x = usp) %do% {
                      list(.RNG.name = "base::Mersenne-Twister",
                           .RNG.seed = NA,
                           p = 0.1,
-                          b = rep(0, ncol(X)),
-                          nu = 50),
+                          b = rep(0, ncol(X))),
                      simplify = FALSE)
   
   for (j in 1:n_chain) inits[[j]]$.RNG.seed <- 100 * j
   
   ## - parameters to be monitored
-  para <- c("b", "p", "nu", "D")
+  para <- c("b", 
+            "p", 
+            #"nu", only needed if model estimates degrees of freedom
+            "D")
   
   ## model files
   m <- runjags::read.jagsfile("code/model_move.R")

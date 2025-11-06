@@ -161,8 +161,8 @@ ggsave(fig_total_move,
 
 # Correlation of body size and density ------------------------------------
 
-# chart.Correlation(df_combined[, c("length0", 
-#                                   "w_density_bluehead_chub", 
+# chart.Correlation(df_combined[, c("length0",
+#                                   "w_density_bluehead_chub",
 #                                   "w_density_creek_chub",
 #                                   "w_density_green_sunfish",
 #                                   "w_density_redbreast_sunfish")],
@@ -172,11 +172,11 @@ ggsave(fig_total_move,
 
 # Correlations of habitat -----------------------------------------------------------------
 
-# chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean",
-#                                          "area", "area_ucb", "mean_temp")],
-#                          method="spearman",
-#                          histogram=TRUE,
-#                          cex = 10)
+chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean",
+                                         "area", "area_ucb", "mean_temp")],
+                         method="spearman",
+                         histogram=TRUE,
+                         cex = 10)
 
 # PCA Habitat -------------------------------------------------------------
 
