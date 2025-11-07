@@ -240,10 +240,10 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                               species = rep(unique(species))) %>% 
                       mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
                              y50 = qt_custum(p = 0.75, # (0.75 - 0.5) * 2 = 0.50
-                                             df = 4, #nu
+                                             df = 3, #nu
                                              sigma = exp(log_sigma)),
                              y90 = qt_custum(p = 0.95, # (0.95 - 0.5) * 2 = 0.90
-                                             df = 4, #nu
+                                             df = 3, #nu
                                              sigma = exp(log_sigma)),
                              focus = v)
                     

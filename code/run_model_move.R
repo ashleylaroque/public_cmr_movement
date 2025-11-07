@@ -80,6 +80,19 @@ list_mcmc <- foreach(x = usp) %do% {
     mutate(log_length = log(length0),
            area_ucb = sqrt(area_ucb))
   
+ # to remove point that may cause colinearity from correlations 
+  if(x == "green_sunfish"){
+    
+    id_rm <- df_i %>% 
+      mutate(rid = row_number()) %>% 
+      drop_na("section1") %>% 
+      filter(w_density_bluehead_chub == max(w_density_bluehead_chub)) %>% 
+      pull(rid)
+    
+    df_i <- slice(df_i, -id_rm)
+  
+  }
+  
   ## data for jags
   list_jags <- with(df_i,
                     list(Y = y,
