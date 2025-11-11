@@ -116,9 +116,35 @@ df_h_sec <- df_sec %>% #has depth, substrate, velocity info
 ## export
 saveRDS(df_h_sec, "data_fmt/data_habitat.rds")
 
-
 h <- df_h_sec %>% 
   group_by(section) %>% 
   reframe(p = mean(area_pool),
           r = mean(area_riffle),
           run = mean(area_run))
+
+df_scaled_hab <- df_h_sec %>% 
+  group_by(occasion) %>% 
+  mutate(occ_width = mean(width),
+         occ_length = mean(section_length),
+         occ_depth = mean(depth_mean),
+         occ_velocity = mean(velocity_mean),
+         occ_sub = mean(substrate_mean),
+         occ_area = mean(area),
+         occ_pool = mean(area_pool),
+         occ_run = mean(area_run),
+         occ_riffle = mean(area_riffle),
+         occ_ucb = mean(area_ucb)) %>% 
+  ungroup() %>% 
+  mutate(sc_width = width/occ_width,
+         sc_length = section_length/occ_length,
+         sc_depth = depth_mean/occ_depth,
+         sc_velocity = velocity_mean/occ_velocity, 
+         sc_sub = substrate_mean/occ_sub,
+         sc_area = area/occ_area,
+         sc_pool = area_pool/occ_pool,
+         sc_run = area_run/occ_run, 
+         sc_riffle = area_riffle/occ_riffle, 
+         sc_ucb = area_ucb/occ_ucb)
+
+## export
+saveRDS(df_scaled_hab, "data_fmt/data_scaled_habitat.rds")

@@ -380,7 +380,7 @@ ggsave(fig_size,
                                  "maroon"), 
                       name = "species") +
    labs(x= expression("Density (n /"~m^2*")"),
-        y= "Absolote movement (m / day)") +
+        y= "Absolute movement (m / day)") +
    theme_set(plt_theme) +
    theme(legend.position = "none",
          strip.background = element_rect(color = "black"),

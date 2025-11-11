@@ -160,21 +160,37 @@ ggsave(fig_total_move,
 
 
 # Correlation of body size and density ------------------------------------
+df_com <- df_combined %>% 
+  drop_na("section1") #%>% 
+  # filter(species == "green_sunfish") %>% 
+  # filter(w_density_bluehead_chub < max(w_density_bluehead_chub))
 
-# chart.Correlation(df_combined[, c("length0",
+# chart.Correlation(df_com[, c("length0",
 #                                   "w_density_bluehead_chub",
 #                                   "w_density_creek_chub",
 #                                   "w_density_green_sunfish",
 #                                   "w_density_redbreast_sunfish")],
-#                          method = "spearman",
+#                          method = "pearson",
 #                          histogram = TRUE,
 #                          cex = 10)
 
 # Correlations of habitat -----------------------------------------------------------------
+df_corr <- df_com %>% 
+      left_join(scaled_hab, 
+                by = c("occasion0" = "occasion",
+                       "section0" = "section"))
 
-chart.Correlation(df_combined[, c("depth_mean", "velocity_mean", "substrate_mean",
-                                         "area", "area_ucb", "mean_temp")],
-                         method="spearman",
+chart.Correlation(df_corr[, c("sc_depth", 
+                              "sc_velocity", 
+                              "sc_sub",
+                              "sc_ucb",
+                              "length0",
+                              "w_density_bluehead_chub",
+                              "w_density_creek_chub",
+                              "w_density_green_sunfish",
+                              "w_density_redbreast_sunfish"
+                              )],
+                         method="pearson",
                          histogram=TRUE,
                          cex = 10)
 

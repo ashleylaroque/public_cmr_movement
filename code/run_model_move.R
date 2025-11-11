@@ -16,8 +16,7 @@ df_den_w <- readRDS("data_fmt/data_density.rds") %>%
               names_from = species,
               values_from = c(n, adj_density, w_density))
 
-df_h <- readRDS("data_fmt/data_habitat.rds") %>% 
-  dplyr::select(-area)
+df_h <- readRDS("data_fmt/data_scaled_habitat.rds") 
 
 # comes from 'format_water_level'; water temperature data
 df_hobo <- readRDS("data_fmt/data_water_hobo.rds")
@@ -77,8 +76,9 @@ n_chain <- 3
 list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
-    mutate(log_length = log(length0),
-           area_ucb = sqrt(area_ucb))
+    mutate(log_length = log(length0) #,
+           #area_ucb = sqrt(area_ucb)
+           )
   
  # to remove point that may cause colinearity from correlations 
   if(x == "green_sunfish"){
@@ -105,8 +105,8 @@ list_mcmc <- foreach(x = usp) %do% {
   ## select predictors
   X <- df_i %>%
     dplyr::select(log_length, # log-trans total length of individual
-                  area_ucb,
-                  velocity_mean,
+                  sc_ucb,
+                  sc_velocity,
                   #mean_temp, doesn't capture true seasonality (fall = spring temp)
                   julian,
                   w_density_bluehead_chub, # seasonally adjusted density
