@@ -76,22 +76,20 @@ n_chain <- 3
 list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
-    mutate(log_length = log(length0) 
-           #, area_ucb = sqrt(area_ucb)
-           )
+    mutate(log_length = log(length0))
   
- # to remove point that may cause colinearity from correlations 
-  if(x == "green_sunfish"){
-    
-    id_rm <- df_i %>% 
-      mutate(rid = row_number()) %>% 
-      drop_na("section1") %>% 
-      filter(w_density_bluehead_chub == max(w_density_bluehead_chub)) %>% 
-      pull(rid)
-    
-    df_i <- slice(df_i, -id_rm)
-  
-  }
+ # # to remove point that may cause colinearity from correlations 
+ #  if(x == "green_sunfish"){
+ #    
+ #    id_rm <- df_i %>% 
+ #      mutate(rid = row_number()) %>% 
+ #      drop_na("section1") %>% 
+ #      filter(w_density_bluehead_chub == max(w_density_bluehead_chub)) %>% 
+ #      pull(rid)
+ #    
+ #    df_i <- slice(df_i, -id_rm)
+ #  
+ #  }
   
   ## data for jags
   list_jags <- with(df_i,
