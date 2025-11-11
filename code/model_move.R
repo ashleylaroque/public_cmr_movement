@@ -8,7 +8,7 @@ model {
   }
   
   p ~ dnorm(0.5, pow(1, -2))T(0, 1)
-  nu <- 4 # supplied degrees of freedom
+  nu <- 5 # supplied degrees of freedom
   #~ dexp(0.1)T(3, ) only needed to estimate degrees of freedom
   
   for (i in 1:Nsample) {

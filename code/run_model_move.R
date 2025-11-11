@@ -76,8 +76,8 @@ n_chain <- 3
 list_mcmc <- foreach(x = usp) %do% {
   
   df_i <- filter(df_move, species == x) %>%
-    mutate(log_length = log(length0) #,
-           #area_ucb = sqrt(area_ucb)
+    mutate(log_length = log(length0) 
+           #, area_ucb = sqrt(area_ucb)
            )
   
  # to remove point that may cause colinearity from correlations 
@@ -114,7 +114,7 @@ list_mcmc <- foreach(x = usp) %do% {
                   w_density_green_sunfish,
                   w_density_redbreast_sunfish
     ) %>%
-    mutate(across(.cols = everything(),
+    mutate(across(.cols = -c(sc_ucb, sc_velocity),
                   .fns = function(x) c(scale(x)))) %>%
     #mutate(julian_sq = julian^2) %>% 
     model.matrix(~., data = .)
