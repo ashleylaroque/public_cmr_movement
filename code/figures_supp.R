@@ -160,9 +160,9 @@ ggsave(fig_total_move,
 
 
 # Correlation of body size and density ------------------------------------
-df_com <- df_combined %>% 
-  drop_na("section1") %>% 
-   filter(species == "bluehead_chub") #%>% 
+# df_com <- df_combined %>% 
+#   drop_na("section1") %>% 
+#    filter(species == "bluehead_chub") %>% 
    #filter(w_density_bluehead_chub < max(w_density_bluehead_chub))
 
 # chart.Correlation(df_com[, c("length0",
@@ -176,16 +176,16 @@ df_com <- df_combined %>%
 
 # Correlations of habitat -----------------------------------------------------------------
 
-chart.Correlation(df_com[, c("sc_velocity", 
-                              "sc_ucb",
-                              "length0",
-                              "w_density_bluehead_chub",
-                              "w_density_creek_chub",
-                              "w_density_green_sunfish",
-                              "w_density_redbreast_sunfish")],
-                         method="pearson",
-                         histogram=TRUE,
-                         cex = 10)
+# chart.Correlation(df_com[, c("sc_velocity", 
+#                               "sc_ucb",
+#                               "length0",
+#                               "w_density_bluehead_chub",
+#                               "w_density_creek_chub",
+#                               "w_density_green_sunfish",
+#                               "w_density_redbreast_sunfish")],
+#                          method="pearson",
+#                          histogram=TRUE,
+#                          cex = 10)
 
 # PCA Habitat -------------------------------------------------------------
 
