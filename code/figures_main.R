@@ -127,11 +127,11 @@ f_label <- function(x) {
 ## - omit non-focus parameters from the figure
 df_mcmc_plot <- df_mcmc %>% 
   filter(!(parm %in% c("p",
-                       "nu",
+                       #"nu",
                        #"mean_temp",
                        "julian",
-                       "velocity_mean",
-                       "area_ucb",
+                       "sc_velocity",
+                       "sc_ucb",
                        "(Intercept)")),
          !str_detect(parm, "D\\[.*\\]")) %>% 
   mutate(var_label = case_when(str_detect(parm, "w_density") ~ 
@@ -411,3 +411,33 @@ ggsave(fig_density,
        width = 15)
 
 
+# NC Guilford County ------------------------------------------------------
+
+# Spatial data for all NC counties
+# The 'cb = TRUE' option gets a cartographic boundary file for simplicity
+nc_counties <- counties("North Carolina", cb = TRUE, class = "sf")
+
+# get data for guilford county
+guil_county <- nc_counties %>%
+  filter(NAME == "Guilford")
+
+# location of study reach
+point_data <- data.frame(
+  name = "Greensboro",
+  longitude = -79.722088,
+  latitude = 36.169939)
+
+# convert the point data frame to an sf object
+point_sf <- st_as_sf(point_data, coords = c("longitude", "latitude"), crs = 4326)
+
+# Plot the selected county outline and point
+fig_site <- ggplot() +
+      geom_sf(data = nc_counties, fill = "white", color = "black", size = 1) +
+      geom_sf(data = guil_county, fill = "gray", color = "black", size = 1) +
+      geom_sf(data = point_sf, color = "black", size = 2, pch = 16) + # Plot the point
+      theme_void() 
+
+ggsave(fig_site,
+       filename = "output/fig_site.pdf",
+       height = 9,
+       width = 12)

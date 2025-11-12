@@ -14,7 +14,9 @@ pacman::p_load(tidyverse,
                ggfortify,
                xtable,
                reporter,
-               lubridate)
+               lubridate,
+               sf,
+               tigris)
 
 
 # sessionInfo() to extract version etc

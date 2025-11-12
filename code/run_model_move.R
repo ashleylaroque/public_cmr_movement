@@ -81,17 +81,17 @@ list_mcmc <- foreach(x = usp) %do% {
            )
   
  # to remove point that may cause colinearity from correlations 
-  if(x == "green_sunfish"){
-    
-    id_rm <- df_i %>% 
-      mutate(rid = row_number()) %>% 
-      drop_na("section1") %>% 
-      filter(w_density_bluehead_chub == max(w_density_bluehead_chub)) %>% 
-      pull(rid)
-    
-    df_i <- slice(df_i, -id_rm)
-  
-  }
+  # if(x == "green_sunfish"){
+  #   
+  #   id_rm <- df_i %>% 
+  #     mutate(rid = row_number()) %>% 
+  #     drop_na("section1") %>% 
+  #     filter(w_density_bluehead_chub == max(w_density_bluehead_chub)) %>% 
+  #     pull(rid)
+  #   
+  #   df_i <- slice(df_i, -id_rm)
+  # 
+  # }
   
   ## data for jags
   list_jags <- with(df_i,
@@ -112,8 +112,7 @@ list_mcmc <- foreach(x = usp) %do% {
                   w_density_bluehead_chub, # seasonally adjusted density
                   w_density_creek_chub,
                   w_density_green_sunfish,
-                  w_density_redbreast_sunfish
-    ) %>%
+                  w_density_redbreast_sunfish) %>%
     mutate(across(.cols = -c(sc_ucb, sc_velocity),
                   .fns = function(x) c(scale(x)))) %>%
     #mutate(julian_sq = julian^2) %>% 
