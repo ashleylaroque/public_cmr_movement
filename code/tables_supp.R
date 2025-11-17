@@ -108,7 +108,7 @@ tab_cap <- df_combined %>%
 
 ## export
 print(xtable(tab_cap,
-             caption = "The number of unique individuals, unique recaptures, captured replicates (including multiple captures of the same individual), and recaptured replicates (including multiple recaptures of the same individual) listed from left to right for each target species.",
+             caption = "The number of unique individuals tagged, unique recaptures, captured replicates (including multiple captures of the same individual), and recaptured replicates (including multiple recaptures of the same individual) listed from left to right for each target species.",
              label = "tab:capture"),
       tabular.environment = "tabular", # use \begin{tabular}
       sanitize.text.function = function(x) x, # for math mode

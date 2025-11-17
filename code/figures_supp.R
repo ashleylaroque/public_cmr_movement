@@ -55,24 +55,24 @@ names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbre
 
 # Histogram of recaps by species ------------------------------------------
 
-(fig_recap <- df_cmr %>% 
-  filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
-  mutate(Recap = ifelse(recap == "n", "No", "Yes")) %>% 
-  ggplot(aes(x = recap, fill = Recap)) +
-  scale_fill_manual(values = alpha(c("gray", "#CC4678FF"))) +
-  geom_bar() +
-  stat_count(geom = "text", aes(label = after_stat(count)), 
-             vjust = -0.5,
-             size = 7) +
-  facet_wrap(~species,
-             labeller = as_labeller(species.labs)) +
-   ylim(0, 1300) +
-   labs(x = "Recapture", y = "Count"))
-
-ggsave(fig_recap, 
-       filename = "output/fig_recap.pdf",
-       height = 10,
-       width = 12)
+# (fig_recap <- df_cmr %>% 
+#   filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
+#   mutate(Recap = ifelse(recap == "n", "No", "Yes")) %>% 
+#   ggplot(aes(x = recap, fill = Recap)) +
+#   scale_fill_manual(values = alpha(c("gray", "#CC4678FF"))) +
+#   geom_bar() +
+#   stat_count(geom = "text", aes(label = after_stat(count)), 
+#              vjust = -0.5,
+#              size = 7) +
+#   facet_wrap(~species,
+#              labeller = as_labeller(species.labs)) +
+#    ylim(0, 1300) +
+#    labs(x = "Recapture", y = "Count"))
+# 
+# ggsave(fig_recap, 
+#        filename = "output/fig_recap.pdf",
+#        height = 10,
+#        width = 12)
 
 
 # Abundance of all captured species ---------------------------------------
@@ -160,11 +160,11 @@ ggsave(fig_total_move,
 
 
 # Correlation of body size and density ------------------------------------
-# df_com <- df_combined %>% 
-#   drop_na("section1") %>% 
-#    filter(species == "bluehead_chub") %>% 
+# df_com <- df_combined %>%
+#   drop_na("section1") %>%
+#    filter(species == "bluehead_chub") %>%
    #filter(w_density_bluehead_chub < max(w_density_bluehead_chub))
-
+# 
 # chart.Correlation(df_com[, c("length0",
 #                                   "w_density_bluehead_chub",
 #                                   "w_density_creek_chub",
@@ -176,27 +176,14 @@ ggsave(fig_total_move,
 
 # Correlations of habitat -----------------------------------------------------------------
 
-# chart.Correlation(df_com[, c("sc_velocity", 
-#                               "sc_ucb",
-#                               "length0",
-#                               "w_density_bluehead_chub",
-#                               "w_density_creek_chub",
-#                               "w_density_green_sunfish",
-#                               "w_density_redbreast_sunfish")],
-#                          method="pearson",
-#                          histogram=TRUE,
-#                          cex = 10)
+chart.Correlation(df_combined[, c("sc_velocity",
+                                  "sc_ucb",
+                                  "sc_depth",
+                                  "sc_sub")],
+                         method="pearson",
+                         histogram=TRUE,
+                         cex = 10)
 
-# PCA Habitat -------------------------------------------------------------
 
-# cmr.pca <- prcomp(df_combined[,c("depth_mean", "velocity_mean", "substrate_mean", 
-#                                  "area", "area_ucb", "mean_temp")], 
-#                    center = TRUE, 
-#                    scale. = TRUE) 
-# summary(cmr.pca)
-# autoplot(cmr.pca, data = df_combined,
-#        loadings = TRUE, loadings.colour = '#20A387FF',
-#        loadings.label = TRUE, loadings.label.colour = 'mediumpurple1')
-# 
 
 

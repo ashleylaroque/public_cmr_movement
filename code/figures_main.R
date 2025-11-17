@@ -369,7 +369,7 @@ ggsave(fig_size,
                                  "low" = 0)) +
    facet_grid2(rows = vars(species),
                cols = vars(opponent),
-               independent = "all",
+               independent = "x",
                scales = "free",
                switch = "x",  # use switch = "y" to swap strip to the left side
                labeller = labeller(species = species.labs,
