@@ -181,11 +181,10 @@ The model was fitted to the data for each species separately using JAGS \citep{p
 
 \section{Results}
 
-Across 15 sampling occasions, we tagged 2,430 unique individuals of our target species, 273 of which were recaptured at least once in consecutive surveys (\ref{tab:capture}).  
-\input{tex/table_capture}
-Absolute movement distances ranged from 0 to 390 m across species and seasons (Appendix Figure S2).  
-For tagged individuals, redbreast sunfish exhibited the largest mean body size ($96.2 \pm 24.4$ mm), followed by creek chub ($92.4 \pm 21.1$ mm), bluehead chub ($91.4 \pm 21.0$ mm), and green sunfish ($84.6 \pm 18.4$ mm).
+Across 15 sampling occasions, we tagged 2,430 unique individuals of our target species, 273 of which were recaptured at least once in consecutive surveys (Table \ref{tab:capture}). Absolute movement distances ranged from 0 to 390 m across species and seasons (Appendix Figure S2). For tagged individuals, redbreast sunfish exhibited the largest mean body size ($96.2 \pm 24.4$ mm), followed by creek chub ($92.4 \pm 21.1$ mm), bluehead chub ($91.4 \pm 21.0$ mm), and green sunfish ($84.6 \pm 18.4$ mm).
 Densities were highest among the creek chub ($0.62 \pm 0.56$ individuals/m$^2$), followed by green sunfish ($0.51 \pm 0.50$), bluehead chub ($0.31 \pm 0.34$), and redbreast sunfish ($0.29 \pm 0.49$).  
+
+\input{tex/table_capture}
 
 \begin{figure}
     \centering
@@ -199,7 +198,7 @@ Densities were highest among the creek chub ($0.62 \pm 0.56$ individuals/m$^2$),
 \end{figure}
 
 Our model analysis revealed that movement responses to body size and density are highly species-specific (Figure \ref{fig:fig_est}). Creek chub and green sunfish increased movement distance with their body size, and their posterior probabilities were greater than 0.95 (Figures \ref{fig:fig_est} and \ref{fig:fig_size}; see also Appendix Table S2). 
-However, the movement patterns of bluehad chub and redbreast sunfish showed vague relationships with body size, with the posterior distributions centered around zero (Figure \ref{fig:fig_est}).
+However, the movement patterns of bluehead chub and redbreast sunfish showed vague relationships with body size, with the posterior distributions centered around zero (Figure \ref{fig:fig_est}).
 
 \begin{figure}
     \centering
@@ -208,10 +207,7 @@ However, the movement patterns of bluehad chub and redbreast sunfish showed vagu
     \label{fig:fig_size}
 \end{figure}
 
-Interspecific density-dependence in movement was observed in green and redbreast sunfish. Posterior distributions indicated that both species responded positively to the density of creek chub (Figures \ref{fig:fig_est} and \ref{fig:fig_density}), suggesting that these species moved away from areas with high population density of creek chub. 
-In contrast, they stayed in areas with high population density of bluehead chub (Figure \ref{fig:fig_est}).
-Bluehead chub and creek chub showed vague responses to other species' densities, although creek chub showed a marginal response to the densities of bluehead chub and green sunfish.
-Interestingly, no species showed strong evidence of intraspecific density dependence in movement (Figure \ref{fig:fig_est}).
+Interspecific density-dependence in movement was highly species-specific (Figure \ref{fig:fig_est} and Figure \ref{fig:fig_density}). Green sunfish responded to both the creek and bluehead chub, but in contrasting ways. Posterior distributions indicated that the green sunfish responded positively to the density of creek chub, suggesting that these species moved away from areas with high population density of creek chub. In contrast, green sunfish responded negatively to bluehead chub such that movement declined in areas with a high population density of bluehead chub. Similarly, posterior distributions indicated that bluehead chub responded negatively to green sunfish density causing movement to decline when green sunfish density was high. Lastly, creek chub movement was reduced when bluehead chub density was high. Interestingly, no species showed strong evidence of intraspecific density dependence in movement (Figure \ref{fig:fig_est} and \ref{fig:fig_density}).
 
 \begin{figure}
     \centering
@@ -220,30 +216,25 @@ Interestingly, no species showed strong evidence of intraspecific density depend
     \label{fig:fig_density}
 \end{figure}
 
-%Green and redbreast sunfish reduced their movement in response to increasing HRA. Neither bluehead chub nor creek chub was influenced by HRA. The effect of current velocity was evident only for redbreast sunfish, which exhibited reduced movement distances in areas with swift currents. These results were summarized in  Appendix Table S2.
+%The effect of seasonality on movement was only present in the green sunfish, suggesting movement declines as the year progresses into fall and winter. The posterior distributions of the environmental variables velocity and HRA were only exhibited in redbreast sunfish movement. The effect of these variables were both negative indicating that redbreast sunfish movement declines in swift currents and when HRA increases. These results were summarized in the Appendix Table S2.
 
 \section{Discussion}
 
 Movement is shaped by species responses to extrinsic and intrinsic drivers \citep{clobertDispersalEcologyEvolution2012}. Yet, these factors are often studied in isolation, causing a lack of quantitative analysis comparing their relative influences. Our four-year data set of mark-recapture research unveiled that both intrinsic (body size) and extrinsic (population densities) factors influence stream fish movements, but their influences varied among species. While this makes our findings difficult to generalize, species-level movement responses can provide greater insight into how species interactions are distributed through non-random movement. 
 
 Our first prediction of size-dependent movement was supported by creek chub and green sunfish. Movement requires great energetic expenditure that needs to be balanced among an individual’s needs \citep{boisclairImportanceActivityBioenergetics1989, joblingBioenergeticsFeedIntake1993, cookeMovementEcologyFishes2022}. Body size is one such limiting factor in determining metabolism \citep{beamish2SwimmingCapacity1978, rubio-graciaSizerelatedEffectsInfluence2020}. Because larger individuals have lower relative maintenance costs than smaller individuals due to greater lipid reserves \citep{brownSizeMattersTest2004, krauseRefugeUseFish1998, kannoBodyConditionMetrics2023}, they may be better able to balance the cost of moving \citep{schlagelMovementmediatedCommunityAssembly2020}. Not only are larger individuals at an energetic advantage, but they may serve as a stronger competitor in the settlement phase \citep{rasmussenIndividualMovementStream2017}. 
-However, size-dependent movement patterns can be highly flexible and system-specific. For example, in South Carolina streams, creek chub did not exhibit size-dependent movement, whereas bluehead chub -- despite showing no such pattern in the present study -- demonstrated increased movement distance with body size \citep{teruiNonrandomDispersalSympatric2021}. Therefore, species that showed weak or no relationship between movement and body size in this study (bluehead chub and redbreast sunfish) might still exhibit size-dependent movement in other stream systems.
+However, size-dependent movement patterns can be highly flexible and system-specific. For example, in South Carolina streams during high-flow disturbance, creek chub did not exhibit size-dependent movement, whereas bluehead chub -- despite showing no such pattern in the present study -- demonstrated increased movement distance with body size \citep{teruiNonrandomDispersalSympatric2021}. Therefore, species that showed weak or no relationship between movement and body size in this study (bluehead chub and redbreast sunfish) might still exhibit size-dependent movement in other stream systems.
 Comparative studies across multiple stream systems may offer deeper insights into the conditions under which size-dependence emerges.
 
-Our second prediction -- higher interspecific density drives more movement -- was partially supported by green and redbreast sunfish, which moved longer distances as the density of creek chub increased. 
+Our second prediction -- higher interspecific density drives more movement -- was only partially supported by the green sunfish, which moved longer distances as the density of creek chub increased. 
 This positive interspecific density-dependence may be indicative of competition between species.
 In small streams, like the one utilized here, the diets of our target species are known to overlap significantly \citep{collarPISCIVORYLIMITSDIVERSIFICATION2009, lemlySuppressionNativeFish1985, karrAssessmentBioticIntegrity1981, leonardApplicationTestingIndex1986}, potentially explaining the mechanism behind our observation.  
-As a consequence of this movement process, sunfish species may move to potentially suboptimal habitats in order to avoid this type of interaction \citep{jacobHabitatChoiceMeets2018, thierryInterplayAbioticBiotic2024}. 
+As a consequence of this movement process, the green sunfish may move to potentially suboptimal habitats in order to avoid this type of interaction \citep{jacobHabitatChoiceMeets2018, thierryInterplayAbioticBiotic2024}. 
 The green sunfish in particular may be successful in this approach as they are a hardy species that colonizes new areas well \citep{lemlySuppressionNativeFish1985, moyleInlandFishesCalifornia2002}.
-However, creek chub did not move away from areas with a higher density of sunfish species, suggesting that this interspecific interaction through movement is asymmetric.
-This result implies, albeit preliminarily, that creek chub is competitively superior to green and redbreast sunfish in our study stream.
+However, creek chub did not move away from areas with a higher density of green sunfish, suggesting that this interspecific interaction through movement is asymmetric. This result implies, albeit preliminarily, that creek chub are competitively superior to green sunfish in our study stream.
 
-Contrary to our expectations, however, these sunfish species tended to stay in areas with high bluehead density.
-The exact mechanism is unclear, but predator-prey interactions might underlie this interspecific density-dependence \citep{jacobHabitatMatchingSpatial2015}. Green and redbreast sunfish have been documented to prey upon various chub species, including bluehead chub \citep{lemlySuppressionNativeFish1985, borrelliPuttingLakeTogether2023}.
-In particular, small individuals of bluehead chub may be susceptible to predation by sunfish species. 
-Thus, a higher density of bluehead chub may indicate greater food availability, potentially discouraging movement of these sunfish species.
-Alternatively, shared environmental cues between the species, such as greater microhabitat (undercut bank, wood debris) availability, could explain a decrease in movement because these areas provide added refugia \citep{careyEffectsLittoralHabitat2010}.
-While we cannot rule out the possibility of shared environmental cues, this mechanism is unlikely because the effects of microhabitat availability were statistically controlled in our model. Although experimental approaches are needed to elucidate biological causality, the trophic mechanism is more likely in our study system. 
+Contrary to our expectations, however, multiple species tended to stay in areas when interspecific density was high. This pattern was evident for the green sunfish and creek chub when density of bluehead chub was elevated, as well as for the bluehead chub when green sunfish density was heightened. The exact mechanism is unclear, but predator-prey interactions might underlie this interspecific density-dependence \citep{jacobHabitatMatchingSpatial2015}. Green sunfish have been documented to prey upon various chub species, including bluehead chub \citep{lemlySuppressionNativeFish1985, borrelliPuttingLakeTogether2023}.
+In this case, small individuals of bluehead chub may be susceptible to predation by the green sunfish. Additionally, bluehead chub build large nests during spawning which create community 'hotspots' drawing a diverse array of organisms nearby \citep{}. Thus, a higher density of bluehead chub may indicate greater food availability, potentially discouraging movement of the green sunfish as well as the creek chub.However, seasonality was statistically controlled in our model, implying this is not a primary mechansim for the patterns found in our data. Alternatively, shared environmental cues between the species, such as greater microhabitat (undercut bank, wood debris) availability, could explain a decrease in movement because these areas provide added refugia \citep{careyEffectsLittoralHabitat2010}. While we cannot rule out the possibility of shared environmental cues, this mechanism is unlikely because the effects of microhabitat availability were statistically controlled in our model. Although experimental approaches are needed to elucidate biological causality, the trophic mechanism is more likely in our study system. 
 
 Interestingly, no species responded significantly to intraspecific densities, countering our third prediction. This result is somewhat surprising given the wealth of studies showing intraspecific competition exceeding interspecific competition in fishes \citep{websterMechanismsIndividualConsequences2000, wardIntraspecificFoodCompetition2006} and other taxa \citep{adlerCompetitionCoexistencePlant2018, barabasEffectIntraInterspecific2016, thompsonProcessbasedMetacommunityFramework2020, chessonRolesHarshFluctuating1997, tilmanResourceCompetitionCommunity1982, mcpeekIntraspecificDensityDependence2012}. While high conspecific density could impose intensive intraspecific competition, it also increases the likelihood of finding potential mates, dilution effects, and group feeding (e.g., Allee effects) \citep{courchampAlleeEffectsEcology2008, gascoigneAlleeEffectsDriven2004, teruiCrypticAlleeEffect2015}. In our system, this may overshadow the relative competition for other resources like habitat and food, thus producing stronger interspecific interactions. Although further studies are needed to illuminate underlying mechanisms, these opposing influences of conspecific density could potentially obscure the influence on movement patterns. 
 
