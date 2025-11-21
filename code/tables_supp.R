@@ -161,21 +161,16 @@ tab_hab <- df_h_sec %>%
   rbind(df_water) %>% 
   mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area (m$^2$)",
                                       habitat_variable == "width" ~ "Mean Width (m)",
-                                      habitat_variable == "section_length" ~ "Section Length (m)",
-                                      habitat_variable == "area_pool" ~ "Pool Area (m$^2$)",
-                                      habitat_variable == "area_riffle" ~ "Riffle Area (m$^2$)",
-                                      habitat_variable == "area_run" ~ "Run Area (m$^2$)",
                                       habitat_variable == "area_ucb" ~ "Habitat Refuge Area (m$^2$)",
                                       habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
                                       habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
-                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)",
-                                      habitat_variable == "temp" ~ "Mean Temperature (C)")) %>% 
+                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
   rename("Habitat Metric" = "habitat_variable") 
 
 
 ## export
 print(xtable(tab_hab,
-             caption = "Mean and standard deviation across sections and occasions for each habitat variable.",
+             caption = "Mean and standard deviation across sections and occasions for each habitat variable. Substrate was categorized 1-7 as follows: (1) silt (<0.01 mm), (2) sand (0.1–2 mm), (3) gravel (2–16 mm), (4) pebble (16–64 mm), (5) cobble (64–256 mm), (6) boulder (256–512 mm) and (7) bedrock (>512 mm). ",
              label = "tab:habitat"),
       tabular.environment = "tabular", # use \begin{tabular}
       sanitize.text.function = function(x) x, # for math mode

@@ -53,28 +53,6 @@ theme_set(plt_theme)
 species.labs <- c("Bluehead Chub", "Creek Chub", "Green Sunfish", "Redbreast Sunfish")
 names(species.labs) <- c("bluehead_chub", "creek_chub", "green_sunfish", "redbreast_sunfish")
 
-# Histogram of recaps by species ------------------------------------------
-
-# (fig_recap <- df_cmr %>% 
-#   filter(species %in% c("creek_chub", "bluehead_chub", "green_sunfish", "redbreast_sunfish")) %>% 
-#   mutate(Recap = ifelse(recap == "n", "No", "Yes")) %>% 
-#   ggplot(aes(x = recap, fill = Recap)) +
-#   scale_fill_manual(values = alpha(c("gray", "#CC4678FF"))) +
-#   geom_bar() +
-#   stat_count(geom = "text", aes(label = after_stat(count)), 
-#              vjust = -0.5,
-#              size = 7) +
-#   facet_wrap(~species,
-#              labeller = as_labeller(species.labs)) +
-#    ylim(0, 1300) +
-#    labs(x = "Recapture", y = "Count"))
-# 
-# ggsave(fig_recap, 
-#        filename = "output/fig_recap.pdf",
-#        height = 10,
-#        width = 12)
-
-
 # Abundance of all captured species ---------------------------------------
 
 df_pro_abund <- df_n %>%
@@ -88,12 +66,15 @@ df_pro_abund <- df_n %>%
 
 (fig_abundance <- df_pro_abund %>% 
     ggplot(aes(reorder(species, -percent), percent)) +
-    geom_col(fill = "#CC4678FF") +
+    geom_col(fill = "maroon") +
     geom_text(aes(label = percent), 
               color = "black", 
-              vjust = -1,
-              size = 5) +
+              vjust = 0,
+              hjust = -.1,
+              size = 5,
+              angle = 45) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ylim(0, 32) +
     xlab("Species") +
     ylab("Percent Abundance"))
 
@@ -103,20 +84,44 @@ ggsave(fig_abundance,
        width = 12)
 
 
+# Histogram of recaps by species ------------------------------------------
+df_recap <- df_combined %>%
+  mutate(recap = ifelse(is.na(section1), "No", "Yes"))
+
+(fig_recap <- df_recap %>%
+    ggplot(aes(x = recap, fill = recap)) +
+    scale_fill_manual(values = alpha(c("gray", "maroon"))) +
+    geom_bar() +
+    stat_count(geom = "text", aes(label = after_stat(count)),
+               vjust = -0.5,
+               size = 7) +
+    facet_wrap(~ species,
+               labeller = as_labeller(species.labs)) +
+    theme(legend.position = "none") +
+    ylim(0, 1500) +
+    labs(x = "Recapture", y = "Count"))
+
+ggsave(fig_recap,
+       filename = "output/fig_recap.pdf",
+       height = 10,
+       width = 12)
+
 # Boxplot of body size -----------------------------------------------
 
-# (fig_size_dist <- ggplot(df_combined, aes(species, length0, fill = species)) +
-#   geom_boxplot() +
-#   scale_fill_manual(values=c("steelblue3", "mediumpurple1", "darkcyan", "maroon"))+
-#   scale_y_continuous(breaks = pretty_breaks()) +
-#   theme(legend.position = "none") +
-#   xlab("Species") +
-#   ylab("Length (mm)"))
-# 
-# ggsave(fig_size_dist, 
-#        filename = "output/fig_size_dist.pdf",
-#        height = 10,
-#        width = 12)
+(fig_size_dist <- ggplot(df_recap, aes(species, length0, fill = recap)) +
+  geom_boxplot() +
+  scale_fill_manual(values=c("gray", "maroon"))+
+  scale_y_continuous(breaks = pretty_breaks()) +
+  scale_x_discrete(labels = species.labs) +
+  theme(legend.position = "right") +
+  labs(fill = "Recapture") +
+  xlab("Species") +
+  ylab("Length (mm)"))
+
+ggsave(fig_size_dist,
+       filename = "output/fig_size_dist.pdf",
+       height = 10,
+       width = 12)
 
 # Histogram of total movement  ----------------------------------------
 
@@ -143,15 +148,15 @@ ggsave(fig_abundance,
 # movement between seasons
 season.labs <- c("0" = "Winter", "1" = "Summer")
 (fig_total_move <- ggplot(df_combined) +
-    geom_histogram(aes(x = move), fill = "darkcyan") +
-    geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
+    geom_histogram(aes(x = abs_move), fill = "maroon") +
+    #geom_vline(xintercept = 0, linetype="dashed", color = "black", size=0.9) +
   facet_grid(season ~ species, 
               scales = "free",
               labeller = labeller(species = species.labs, season = season.labs)) +
     scale_y_continuous(breaks = pretty_breaks()) +
     theme(axis.text.x = element_text(angle = 45, vjust = .5),
           legend.position = "none") +
-    labs(x = "Distance (m)", y = "Count"))
+    labs(x = "Absolute Distance (m)", y = "Count"))
 
 ggsave(fig_total_move, 
        filename = "output/fig_total_move.pdf",

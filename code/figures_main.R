@@ -127,8 +127,6 @@ f_label <- function(x) {
 ## - omit non-focus parameters from the figure
 df_mcmc_plot <- df_mcmc %>% 
   filter(!(parm %in% c("p",
-                       #"nu",
-                       #"mean_temp",
                        "julian",
                        "sc_velocity",
                        "sc_ucb",
@@ -175,7 +173,7 @@ df_mcmc_plot <- df_mcmc %>%
              linetype = "dashed",
              alpha = 0.5) +
   scale_fill_gradient(low = "white",
-                      high = "#CC4678FF") +
+                      high = "maroon") +
   facet_wrap(~ sp_label,
              scales = "free") +
   theme_ridges() +
