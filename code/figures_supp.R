@@ -120,8 +120,8 @@ ggsave(fig_recap,
 
 ggsave(fig_size_dist,
        filename = "output/fig_size_dist.pdf",
-       height = 10,
-       width = 12)
+       height = 19,
+       width = 13)
 
 # Histogram of total movement  ----------------------------------------
 

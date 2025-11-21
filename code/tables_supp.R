@@ -151,21 +151,26 @@ df_water <- df_daily %>%
           "habitat_variable" = "temp") 
 
 tab_hab <- df_h_sec %>% 
-  pivot_longer(cols = -c(occasion, section),
+  select(c(area, width, area_ucb, depth_mean, velocity_mean, substrate_mean)) %>% 
+  pivot_longer(cols = everything(),
                names_to = "habitat_variable",
                values_to = "value") %>% 
   group_by(habitat_variable) %>% 
   reframe(Mean = mean(value),
             "Standard Deviation" = sd(value)) %>% 
   ungroup() %>% 
-  rbind(df_water) %>% 
   mutate(habitat_variable = case_when(habitat_variable == "area" ~ "Mean Section Area (m$^2$)",
-                                      habitat_variable == "width" ~ "Mean Width (m)",
+                                      habitat_variable == "width" ~ "Mean Section Width (m)",
                                       habitat_variable == "area_ucb" ~ "Habitat Refuge Area (m$^2$)",
                                       habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
                                       habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
                                       habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
-  rename("Habitat Metric" = "habitat_variable") 
+  mutate(habitat_variable = factor(habitat_variable, 
+                                   levels = c("Mean Section Area (m$^2$)", "Mean Section Width (m)", 
+                                              "Habitat Refuge Area (m$^2$)", "Mean Substrate (mm)", 
+                                              "Mean Depth (cm)", "Mean Velocity (m/s)"))) %>% 
+  arrange(habitat_variable) %>% 
+  rename("Habitat Metric" = "habitat_variable")
 
 
 ## export
