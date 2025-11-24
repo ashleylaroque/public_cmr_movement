@@ -155,33 +155,33 @@ df_mcmc_plot <- df_mcmc %>%
 
 ## density ridge figure
 (fig_est <- df_mcmc_plot %>% 
-  ggplot(aes(x = value,
-             y = var_label)) +
-  geom_density_ridges(scale = 0.9, 
-                      aes(fill = prob),
-                      # quantile_lines = TRUE,
-                      # quantiles = 2,
-                      color = grey(0.3, 0.8)) +
-  geom_segment(aes(x = lower,
-                   xend = upper),
-               color = grey(0.3, 0.8),
-               linewidth = 0.4,
-               lineend = "round") +
-  geom_point(aes(x = med),
-             color = grey(0.3, 0.8)) +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             alpha = 0.5) +
-  scale_fill_gradient(low = "white",
-                      high = "maroon") +
-  facet_wrap(~ sp_label,
-             scales = "free") +
-  theme_ridges() +
-  theme(strip.background = element_blank(),
-        strip.text = element_text(margin = margin(b = 10))) +
-  labs(fill = "Posterior prob.",
-       x = "Estimate",
-       y = "Predictor"))
+    ggplot(aes(x = value,
+               y = var_label)) +
+    geom_density_ridges(scale = 0.9, 
+                        aes(fill = prob),
+                        # quantile_lines = TRUE,
+                        # quantiles = 2,
+                        color = grey(0.3, 0.8)) +
+    geom_segment(aes(x = lower,
+                     xend = upper),
+                 color = grey(0.3, 0.8),
+                 linewidth = 0.4,
+                 lineend = "round") +
+    geom_point(aes(x = med),
+               color = grey(0.3, 0.8)) +
+    geom_vline(xintercept = 0,
+               linetype = "dashed",
+               alpha = 0.5) +
+    scale_fill_gradient(low = "white",
+                        high = "maroon") +
+    facet_wrap(~ sp_label,
+               scales = "free") +
+    theme_ridges() +
+    theme(strip.background = element_blank(),
+          strip.text = element_text(margin = margin(b = 10))) +
+    labs(fill = "Posterior prob.",
+         x = "Estimate",
+         y = "Predictor"))
 
 ## export
 ggsave(fig_est,
@@ -267,7 +267,7 @@ df_pred <- readRDS("data_fmt/output_move_pred.rds") %>%
   mutate(log_length = log(length0),
          obs = !is.na(section1)) %>% 
   rename(abs_move = pred)
-  
+
 
 # Effect of Body Size ---------------------------------------------------
 
@@ -279,46 +279,46 @@ df_size <- df_pred %>%
   ungroup()
 
 (fig_size <- df_size %>%
-   filter(obs) %>% # figure only includes recap
-   ggplot(aes(x = log_length,
-              y = abs_move,
-              color = species)) +
+    filter(obs) %>% # figure only includes recap
+    ggplot(aes(x = log_length,
+               y = abs_move,
+               color = species)) +
     geom_point(size = 1) + ## add points
     scale_color_manual(values=c("steelblue3", 
                                 "mediumpurple1", 
                                 "darkcyan",
                                 "maroon"),
-                      name="Species") +
-   geom_area(data = df_fig %>% ## draw shaded area
-               filter(focus == "log_length"),
-             aes(x = x_value,
-                 y = y50,
-                 alpha = prob_level,
-                 fill = species),
-             color = NA) +
-   geom_area(data = df_fig %>% ## draw shaded area
-               filter(focus == "log_length"),
-             aes(x = x_value,
-                 y = y90,
-                 alpha = prob_level,
-                 fill = species),
-             color = NA) +
-   scale_alpha_manual(values = c("high" = .35,
-                                 "low" = 0)) +
-   scale_fill_manual(values=c("steelblue3", 
-                              "mediumpurple1", 
-                              "darkcyan",
-                              "maroon")) +
-   scale_x_continuous(labels = label_number(accuracy = 0.2)) +
-   facet_wrap2(~ species,
-               scales = "free",
-               strip = strip1,
-               labeller = labeller(species = species.labs)) +
-   labs(x= "ln(Body length at capture) (ln mm)",
-        y= "Absolute movement (m/day)") +
-   theme_set(plt_theme) +
-   theme(legend.position = "none",
-         strip.text = element_text(color = 'white'))) 
+                       name="Species") +
+    geom_area(data = df_fig %>% ## draw shaded area
+                filter(focus == "log_length"),
+              aes(x = x_value,
+                  y = y50,
+                  alpha = prob_level,
+                  fill = species),
+              color = NA) +
+    geom_area(data = df_fig %>% ## draw shaded area
+                filter(focus == "log_length"),
+              aes(x = x_value,
+                  y = y90,
+                  alpha = prob_level,
+                  fill = species),
+              color = NA) +
+    scale_alpha_manual(values = c("high" = .35,
+                                  "low" = 0)) +
+    scale_fill_manual(values=c("steelblue3", 
+                               "mediumpurple1", 
+                               "darkcyan",
+                               "maroon")) +
+    scale_x_continuous(labels = label_number(accuracy = 0.2)) +
+    facet_wrap2(~ species,
+                scales = "free",
+                strip = strip1,
+                labeller = labeller(species = species.labs)) +
+    labs(x= "ln(Body length at capture) (ln mm)",
+         y= "Absolute movement (m/day)") +
+    theme_set(plt_theme) +
+    theme(legend.position = "none",
+          strip.text = element_text(color = 'white'))) 
 
 ggsave(fig_size,
        filename = "output/fig_size.pdf",
@@ -327,18 +327,26 @@ ggsave(fig_size,
 
 # Effect of Density -------------------------------------------------------
 
-(fig_den <- df_move %>% 
-   select(species,
-          intv,
-          abs_move,
-          w_density_bluehead_chub,
-          w_density_creek_chub, 
-          w_density_green_sunfish,
-          w_density_redbreast_sunfish) %>% 
-   pivot_longer(cols = starts_with("w_density"),
-                names_to = "opponent", 
-                values_to = "density") %>% 
-   drop_na(abs_move) %>% 
+df_den <- df_move %>% 
+  select(species,
+         intv,
+         abs_move,
+         w_density_bluehead_chub,
+         w_density_creek_chub, 
+         w_density_green_sunfish,
+         w_density_redbreast_sunfish) %>% 
+  pivot_longer(cols = starts_with("w_density"),
+               names_to = "opponent", 
+               values_to = "density") %>% 
+  drop_na(abs_move)
+
+y_max_obs <- with(df_den, max(abs_move/intv))
+y_max_pred <- with(filter(df_fig, 
+                          prob_level == "high",
+                          focus != "log_length"), max(y90))
+y_max <- max(y_max_pred, y_max_obs)
+
+(fig_den <- df_den %>% 
    ggplot(aes(x = density,
               y = abs_move / intv, 
               color = species)) +
@@ -371,7 +379,8 @@ ggsave(fig_size,
                scales = "free",
                switch = "x",  # use switch = "y" to swap strip to the left side
                labeller = labeller(species = species.labs,
-                                  opponent = opp.labs)) +
+                                   opponent = opp.labs)) +
+   scale_y_continuous(limits = c(0, y_max)) +
    scale_color_manual(values = c("steelblue3", 
                                  "mediumpurple1", 
                                  "darkcyan",
@@ -430,10 +439,10 @@ point_sf <- st_as_sf(point_data, coords = c("longitude", "latitude"), crs = 4326
 
 # Plot the selected county outline and point
 fig_site <- ggplot() +
-      geom_sf(data = nc_counties, fill = "white", color = "black", size = 1) +
-      geom_sf(data = guil_county, fill = "gray", color = "black", size = 1) +
-      geom_sf(data = point_sf, color = "black", size = 2, pch = 16) + # Plot the point
-      theme_void() 
+  geom_sf(data = nc_counties, fill = "white", color = "black", size = 1) +
+  geom_sf(data = guil_county, fill = "gray", color = "black", size = 1) +
+  geom_sf(data = point_sf, color = "black", size = 2, pch = 16) + # Plot the point
+  theme_void() 
 
 ggsave(fig_site,
        filename = "output/fig_site.pdf",
