@@ -192,31 +192,35 @@ ggsave(fig_est,
 
 # prepare data frame for predicted values ---------------------------------
 
-x_name <- df_output %>% 
-  filter(str_detect(parm, "log_length|w_density")) %>% 
+x_name0 <- df_output %>% 
+  filter(str_detect(parm, "Intercept|log_length|w_density|ucb|velocity")) %>% 
   pull(parm) %>% 
   unique()
 
-qt_custum <- function(p, df, mu = 0, sigma = 1) {
+qt_custom <- function(p, df, mu = 0, sigma = 1) {
   qt(p, df) * sigma + mu
 }
 
 df_y <- foreach(k = usp, .combine = bind_rows) %do% {
   
-  v_b <- df_output %>% 
+  df_b <- df_output %>% 
     filter(species == k,
-           parm %in% c("(Intercept)", x_name)) %>% 
-    pull(median)
+           parm %in% x_name0)
   
-  # nu <- df_output %>% 
-  #   filter(species == k,
-  #          parm == "nu") %>% 
-  #   pull(median)
+  v_b <- pull(df_b, median)
+  names(v_b) <- pull(df_b, parm)
+  
+  ## intercept + ucb + velocity effect
+  ## note - mean(ucb) = mean(velocity) = 1 for each occasion
+  ## b0 represents an expected movement rate when ucb & velocity are mean values
+  b0 <- sum(v_b[c(which(str_detect(x_name0,
+                                   "Intercept|ucb|velocity")))])
+  x_name <- x_name0[!str_detect(x_name0, "Intercept|ucb|velocity")]
   
   df_x <- foreach(v = x_name,
                   .combine = bind_rows) %do% {
                     
-                    bid <- which(c("(Intercept)", x_name) == v)        
+                    bid <- which(x_name0 == v)
                     
                     ## rename focused predictor name to `x`
                     df_v <- df_move %>%
@@ -236,12 +240,12 @@ df_y <- foreach(k = usp, .combine = bind_rows) %do% {
                                             length = 100),
                               scl_x = (x_value - mu_x) / sd_x,
                               species = rep(unique(species))) %>% 
-                      mutate(log_sigma = v_b[1] + v_b[bid] * scl_x, 
-                             y50 = qt_custum(p = 0.75, # (0.75 - 0.5) * 2 = 0.50
-                                             df = 3, #nu
+                      mutate(log_sigma = b0 + v_b[bid] * scl_x, 
+                             y50 = qt_custom(p = 0.75, # (0.75 - 0.5) * 2 = 0.50
+                                             df = 5, #nu
                                              sigma = exp(log_sigma)),
-                             y90 = qt_custum(p = 0.95, # (0.95 - 0.5) * 2 = 0.90
-                                             df = 3, #nu
+                             y90 = qt_custom(p = 0.95, # (0.95 - 0.5) * 2 = 0.90
+                                             df = 5, #nu
                                              sigma = exp(log_sigma)),
                              focus = v)
                     
@@ -340,6 +344,7 @@ df_den <- df_move %>%
                values_to = "density") %>% 
   drop_na(abs_move)
 
+## maximum y across species
 y_max_obs <- with(df_den, max(abs_move/intv))
 y_max_pred <- with(filter(df_fig, 
                           prob_level == "high",
@@ -360,7 +365,7 @@ y_max <- max(y_max_pred, y_max_obs)
                  fill = species),
              color = NA) +
    geom_area(data = df_fig %>% ## draw shaded area
-               filter(str_detect(focus, "w_density")) %>% 
+               filter(str_detect(focus, "w_density")) %>%
                rename(opponent = "focus"),
              aes(x = x_value,
                  y = y90,
