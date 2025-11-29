@@ -7,6 +7,7 @@ rm(list = ls())
 source(here::here("code/library.R"))
 source(here::here("code/format_cmr.R"))
 source(here::here("code/format_habitat.R"))
+
 df_combined <- readRDS("data_fmt/data_combined.rds") %>% 
   mutate(move = (section1 - section0) * 10, 
          abs_move = abs(move), # generate absolute movement for figures
@@ -120,8 +121,8 @@ ggsave(fig_recap,
 
 ggsave(fig_size_dist,
        filename = "output/fig_size_dist.pdf",
-       height = 19,
-       width = 13)
+       height = 10,
+       width = 12)
 
 # Histogram of total movement  ----------------------------------------
 

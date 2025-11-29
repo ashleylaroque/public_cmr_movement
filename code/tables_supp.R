@@ -16,9 +16,9 @@ df_est <- readRDS("data_fmt/output_move.rds") %>%
                         "redbreast_sunfish")) %>% 
   mutate(parm = case_when(parm == "(Intercept)" ~ "Intercept",
                           parm == "log_length" ~ "ln(Body length)",
-                          parm == "area_ucb" ~ "Habitat refuge area",
-                          parm == "velocity_mean" ~ "Current velocity",
-                          parm == "mean_temp" ~ "Temperature",
+                          parm == "sc_ucb" ~ "Habitat refuge area",
+                          parm == "sc_velocity" ~ "Current velocity",
+                          parm == "julian" ~ "Julian Day",
                           parm == "w_density_bluehead_chub" ~ "Density bluehead chub",
                           parm == "w_density_creek_chub" ~ "Density creek chub",
                           parm == "w_density_green_sunfish" ~ "Density green sunfish",
