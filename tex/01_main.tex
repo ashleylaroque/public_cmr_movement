@@ -15,7 +15,8 @@
             lineno,
             setspace,
             longtable,
-            float}
+            float,
+            minitoc}
 
 % side caption figure
 \usepackage{sidecap}
@@ -40,10 +41,6 @@
 \linenumbers
 \doublespacing
 
-% mini table of contents in appendix
-\setcounter{minitocdepth}{2}
-\dominitoc
-
 % title
 %\title{Body size and local density influence movement patterns in stream fish}
 \date{} % remove date from title
@@ -65,9 +62,9 @@
 
 \begin{document}
 
-\renewcommand{\theequation}{S\arabic{equation}}
-\renewcommand{\thetable}{S\arabic{table}}
-\renewcommand{\thefigure}{S\arabic{figure}}
+%\renewcommand{\theequation}{S\arabic{equation}}
+%\renewcommand{\thetable}{S\arabic{table}}
+%\renewcommand{\thefigure}{S\arabic{figure}}
 
 \maketitle
 \thispagestyle{empty}
@@ -126,7 +123,7 @@ We selected the four most abundant fish species throughout the reach, all of whi
 
 The creek chub and bluehead chub are morphologically similar, but differ slightly in their habitat preferences. Creek chub are the most resilient to environmental degradation and have little preference over habitat \citep{bramblettDevelopmentEvaluationFish2005, mccormickDevelopmentIndexBiotic2001}. Bluehead chub are more selective and prefer finer substrate (e.g. pebble) for nest building during the spring spawning season \citep{evelynFacilitationBenthicAssemblages2024}. Despite these subtle differences, habitat requirements of the creek and bluehead chub change across body size such that larger individuals more often occupy areas with greater microhabitat \citep{schlosserPredationRiskHabitat1988, magnanOntogeneticChangesDiel1984}. Both the green and redbreast sunfish are tolerant of a broad range of habitat quality and are nest-builders during spring spawning \citep{wernerCompetitionHabitatShift1977, helmsFeedingGrowthTrophic2018, etnierFishesTennessee1993}. Largely, these four species are generalist insectivores, but they will occasionally prey upon other fish as adults \citep{wernerCompetitionHabitatShift1977, teruiNonrandomDispersalSympatric2021, helmsFeedingGrowthTrophic2018, etnierFishesTennessee1993}. 
 % Other water-column and benthic species found (ordered from common to rare) within this reach include: \textit{Etheostoma olmstedi} tessellated darter, \textit{Moxostoma rupiscartes} striped jumprock, \textit{L. macrochirus} bluegill, \textit{Micropterus salmoides} largemouth bass, \textit{Noturus insignis} margined madtom, \textit{Fundulus rathbuni} speckled killifish, \textit{M. collapsum} notchlip redhorse, \textit{Luxilus albeolus} white shiner, \textit{Erimyzon oblongus} creek chubsucker, \textit{Gambusia holbrooki} eastern mosquitofish, \textit{Misgurnus anguillicaudatus} pond loach, \textit{L. gulosus} warmouth, \textit{Clinostomus funduloides} rosy side dace, and \textit{Ameiurus natalis} yellow bullhead. 
-Proportional abundance for each of these species can be found in Appendix Figure S1.
+Proportional abundance for each of these species can be found in Appendix Figure B.1.
 
 \subsection{Fish Sampling}
 
@@ -140,7 +137,6 @@ After the successful implantation, fish were returned to their holding bucket an
 
 Habitat variables were measured at base-flow conditions along three evenly spaced transects per section. In each transect, we measured the following physical variables at the center and near both sides of the bank, totaling nine measurements per section: water depth (nearest cm), current velocity (m/s), and dominant substrate type (silt, <0.1 mm; sand, 0.1--2 mm; gravel, 2--16 mm; pebble, 16--64 mm; cobble, 64--256 mm; boulder, 256--512 mm; bedrock, >512 mm). In addition, we measured the total aerial coverage of habitat refuge areas (HRA; m$^2$) like undercut banks and woody debris per section as these structures may represent important microhabitats for the study species. We calculated the surface area of each section as the mean wet width (measured at each transect) times the section length. Average habitat metrics can be found in Table \ref{tab:habitat}. 
 % Each habitat metric was scaled by occasion. Scaled velocity, depth, substrate, and HRA were not strongly correlated with one another (Pearson's $r < 0.40$). However, we chose not to include depth because it was weakly correlated with HRA (Pearson $r = 0.39$), and we did not include substrate because it was a visual estimate subject to bias. Therefore, we included scaled velocity and HRA as environmental covariates to control for their effects on movement. 
-
 \input{tex/table_habitat}
 
 \subsection{Statistical Analysis}
@@ -206,7 +202,7 @@ The model was fitted to the data for each species separately using JAGS version 
 
 \section{Results}
 
-Across 15 sampling occasions, we tagged 2,430 unique individuals of our target species, 273 of which were recaptured at least once in consecutive surveys (Table \ref{tab:capture}). Absolute movement distances ranged from 0 to 390 m across species and seasons (Appendix Figure S2). For tagged individuals, redbreast sunfish exhibited the largest mean body size ($96.2 \pm 24.4$ mm), followed by creek chub ($92.4 \pm 21.1$ mm), bluehead chub ($91.4 \pm 21.0$ mm), and green sunfish ($84.6 \pm 18.4$ mm) (body size of recaptured compared to unrecaptured can be found in the Appendix Figure S3).
+Across 15 sampling occasions, we tagged 2,430 unique individuals of our target species, 273 of which were recaptured at least once in consecutive surveys (Table \ref{tab:capture}). Absolute movement distances ranged from 0 to 390 m across species and seasons (Appendix Figure B.2). For tagged individuals, redbreast sunfish exhibited the largest mean body size ($96.2 \pm 24.4$ mm), followed by creek chub ($92.4 \pm 21.1$ mm), bluehead chub ($91.4 \pm 21.0$ mm), and green sunfish ($84.6 \pm 18.4$ mm) (body size of recaptured compared to unrecaptured can be found in the Appendix Figure B.3).
 Densities were highest among the creek chub ($0.62 \pm 0.56$ individuals/m$^2$), followed by green sunfish ($0.51 \pm 0.50$), bluehead chub ($0.31 \pm 0.34$), and redbreast sunfish ($0.29 \pm 0.49$).  
 
 \input{tex/table_capture}
@@ -222,7 +218,7 @@ Densities were highest among the creek chub ($0.62 \pm 0.56$ individuals/m$^2$),
     \label{fig:fig_est}
 \end{figure}
 
-Our model analysis revealed that movement responses to body size and density are highly species-specific (Figure \ref{fig:fig_est}). Creek chub and green sunfish increased movement distance with their body size, and their posterior probabilities were greater than 0.95 (Figures \ref{fig:fig_est} and \ref{fig:fig_size}; see also Appendix Table S2). 
+Our model analysis revealed that movement responses to body size and density are highly species-specific (Figure \ref{fig:fig_est}). Creek chub and green sunfish increased movement distance with their body size, and their posterior probabilities were greater than 0.95 (Figures \ref{fig:fig_est} and \ref{fig:fig_size}; see also Appendix Table C.2). 
 However, the movement patterns of bluehead chub and redbreast sunfish showed vague relationships with body size, with the posterior distributions centered around zero (Figure \ref{fig:fig_est}).
 
 \begin{figure}
@@ -243,7 +239,7 @@ Interspecific density-dependence in movement was highly species-specific (Figure
 
 The effect of Julian day on movement was only present in the green sunfish, suggesting movement declines as the year progresses into fall and winter. The effects of environmental variables (HRA and velocity) were significant only in redbreast sunfish, with their movement declining as HRA and current velocity increased. 
 Creek chub also tended to move less when current velocity was high, but this effect was marginal.
-These results were summarized in the Appendix Table S2.
+These results were summarized in the Appendix Table C.2.
 
 \section{Discussion}
 
@@ -302,8 +298,19 @@ This work is based on materials supported by University of North Carolina at Gre
 
 \newpage
 \appendix
+\begin{flushleft}
+    {\LARGE \textbf{Appendix}}
+\end{flushleft}
 
+% Reset counters
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{equation}{0}
 
+% Appendix-style numbering
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
 
 \section{Detection Model}
 
