@@ -164,10 +164,10 @@ tab_hab <- df_h_sec %>%
                                       habitat_variable == "area_ucb" ~ "Habitat Refuge Area (m$^2$)",
                                       habitat_variable == "depth_mean" ~ "Mean Depth (cm)",
                                       habitat_variable == "velocity_mean" ~ "Mean Velocity (m/s)",
-                                      habitat_variable == "substrate_mean" ~ "Mean Substrate (mm)")) %>% 
+                                      habitat_variable == "substrate_mean" ~ "Mean Substrate")) %>% 
   mutate(habitat_variable = factor(habitat_variable, 
                                    levels = c("Mean Section Area (m$^2$)", "Mean Section Width (m)", 
-                                              "Habitat Refuge Area (m$^2$)", "Mean Substrate (mm)", 
+                                              "Habitat Refuge Area (m$^2$)", "Mean Substrate", 
                                               "Mean Depth (cm)", "Mean Velocity (m/s)"))) %>% 
   arrange(habitat_variable) %>% 
   rename("Habitat Metric" = "habitat_variable")
