@@ -62,7 +62,7 @@ df_pro_abund <- df_n %>%
   ungroup() %>%  
   mutate(total = sum(abund),
          proportion = abund/total, 
-         percent = round(((abund/total) * 100), digits = 1),
+         percent = round(((abund/total) * 100), digits = 2),
          sd = sd(proportion)) 
 
 (fig_abundance <- df_pro_abund %>% 
